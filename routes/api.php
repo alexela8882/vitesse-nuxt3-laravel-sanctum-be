@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\PersonalAccessToken;
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\RoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,5 +26,18 @@ Route::controller(AuthController::class)->group(function(){
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
   $user = auth('sanctum')->user();
+  $user->roles;
+
   return $user;
 });
+
+Route::controller(RoleController::class)->group(function (){
+  Route::get('roles', 'all')->middleware('auth:sanctum');
+});
+
+// Route::group(['prefix' => '/roles', 'middleware' => ['auth:sanctum']], function () {
+//   Route::get('/', [
+//     'uses' => 'RoleController@all',
+//     'as' => 'role.all'
+//   ]);
+// });
