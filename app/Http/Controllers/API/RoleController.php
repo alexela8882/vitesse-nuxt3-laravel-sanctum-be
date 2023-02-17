@@ -20,4 +20,16 @@ class RoleController extends BaseController
 
       return response()->json($roles);
     }
+
+    public function update ($id, Request $request) {
+      $role = Role::find($id);
+      foreach ($request->all() as $key => $value) {
+        if ($key !== 'api') {
+          $role[$value['fieldName']] = $value['value'];
+        }
+      }
+      $role->update();
+
+      return response()->json($role);
+    }
 }

@@ -32,12 +32,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::controller(RoleController::class)->group(function (){
-  Route::get('roles', 'all')->middleware('auth:sanctum');
+  Route::group(['prefix' => '/roles', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/', 'all');
+    Route::post('{id}/update', 'update');
+  });
 });
-
-// Route::group(['prefix' => '/roles', 'middleware' => ['auth:sanctum']], function () {
-//   Route::get('/', [
-//     'uses' => 'RoleController@all',
-//     'as' => 'role.all'
-//   ]);
-// });
