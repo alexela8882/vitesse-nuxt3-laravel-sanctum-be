@@ -34,6 +34,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::controller(RoleController::class)->group(function (){
   Route::group(['prefix' => '/roles', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all');
+    Route::post('/store', 'store');
     Route::post('{id}/update', 'update');
   });
 });

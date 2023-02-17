@@ -21,15 +21,31 @@ class RoleController extends BaseController
       return response()->json($roles);
     }
 
+    public function store (Request $request) {
+      $role = new Role;
+      foreach ($request->all() as $key => $value) {
+        if ($key !== 'api' && $key !== 'store') {
+          $role[$value['fieldName']] = $value['value'];
+        }
+      }
+      $role->save();
+
+      return response()->json($role);
+    }
+
     public function update ($id, Request $request) {
       $role = Role::find($id);
       foreach ($request->all() as $key => $value) {
-        if ($key !== 'api') {
+        if ($key !== 'api' && $key !== 'store') {
           $role[$value['fieldName']] = $value['value'];
         }
       }
       $role->update();
 
-      return response()->json($role);
+      $obj = Role::where('id', $id)->with(['permissions' => function ($qry) {
+        $qry->select('id', 'name');
+      }])->first();
+
+      return response()->json($obj);
     }
 }
