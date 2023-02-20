@@ -18,7 +18,7 @@ class RoleController extends BaseController
                 $qry->select('id', 'name');
               }])
               ->orderBy('id', 'asc')
-              ->get();
+              ->paginate(5);
 
       return response()->json($roles);
     }
@@ -34,7 +34,12 @@ class RoleController extends BaseController
       $role->name = $request->name;
       $role->save();
 
-      return response()->json($role);
+      $response = [
+        'data' => $role,
+        'message' => '"' . $role->name . '" has been successfully added.'
+      ];
+
+      return response()->json($response);
     }
 
     public function update ($id, Request $request) {
@@ -52,6 +57,11 @@ class RoleController extends BaseController
         $qry->select('id', 'name');
       }])->first();
 
-      return response()->json($obj);
+      $response = [
+        'data' => $obj,
+        'message' => '"' . $role->name . '" has been successfully updated.'
+      ];
+
+      return response()->json($response);
     }
 }
