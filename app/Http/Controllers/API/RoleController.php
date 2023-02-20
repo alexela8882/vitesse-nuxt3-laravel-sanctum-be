@@ -8,6 +8,8 @@ use App\Http\Controllers\API\BaseController as BaseController;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
+use Validator;
+
 class RoleController extends BaseController
 {
     public function all () {
@@ -22,24 +24,28 @@ class RoleController extends BaseController
     }
 
     public function store (Request $request) {
+      $validator = Validator::make($request->all(), [
+        'name' => 'required|unique:roles,name'
+      ]);
+
+      if($validator->fails()) return response()->json($validator->errors(), 422);
+
       $role = new Role;
-      foreach ($request->all() as $key => $value) {
-        if ($key !== 'api' && $key !== 'store') {
-          $role[$value['fieldName']] = $value['value'];
-        }
-      }
+      $role->name = $request->name;
       $role->save();
 
       return response()->json($role);
     }
 
     public function update ($id, Request $request) {
+      $validator = Validator::make($request->all(), [
+        'name' => 'required|unique:roles,name,'.$id
+      ]);
+
+      if($validator->fails()) return response()->json($validator->errors(), 422);
+
       $role = Role::find($id);
-      foreach ($request->all() as $key => $value) {
-        if ($key !== 'api' && $key !== 'store') {
-          $role[$value['fieldName']] = $value['value'];
-        }
-      }
+      $role->name = $request->name;
       $role->update();
 
       $obj = Role::where('id', $id)->with(['permissions' => function ($qry) {
