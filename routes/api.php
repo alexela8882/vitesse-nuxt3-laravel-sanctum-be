@@ -6,6 +6,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\RoleController;
+use App\Http\Controllers\API\PermissionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +35,16 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::controller(RoleController::class)->group(function (){
   Route::group(['prefix' => '/roles', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all');
-    Route::post('/store', 'store');
+    Route::put('/store', 'store');
+    Route::post('{id}/update', 'update');
+    Route::delete('{id}/delete', 'delete');
+  });
+});
+
+Route::controller(PermissionController::class)->group(function (){
+  Route::group(['prefix' => '/permissions', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/', 'all');
+    Route::put('/store', 'store');
     Route::post('{id}/update', 'update');
   });
 });

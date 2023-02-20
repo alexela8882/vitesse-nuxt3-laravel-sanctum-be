@@ -64,4 +64,17 @@ class RoleController extends BaseController
 
       return response()->json($response);
     }
+
+    public function delete ($id) {
+      $role = Role::find($id);
+      $savedRole = $role;
+      $role->delete();
+
+      $response = [
+        'data' => $role,
+        'message' => '"' . $role->name . '" role has been successfully deleted.'
+      ];
+
+      return response()->json($response);
+    }
 }
