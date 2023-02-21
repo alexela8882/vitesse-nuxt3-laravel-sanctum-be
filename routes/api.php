@@ -35,16 +35,18 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::controller(RoleController::class)->group(function (){
   Route::group(['prefix' => '/roles', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all');
+    Route::get('/get/{token}', 'get');
     Route::put('/store', 'store');
-    Route::post('{id}/update', 'update');
-    Route::delete('{id}/delete', 'delete');
+    Route::post('/update/{token}', 'update');
+    Route::delete('/delete/{token}', 'delete');
   });
 });
 
 Route::controller(PermissionController::class)->group(function (){
   Route::group(['prefix' => '/permissions', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all');
-    Route::put('/store', 'store');
-    Route::post('{id}/update', 'update');
+    Route::put('/sync-to-role/{token}', 'syncToRole');
+    Route::post('/update/{token}', 'update');
+    Route::delete('/delete/{token}', 'delete');
   });
 });

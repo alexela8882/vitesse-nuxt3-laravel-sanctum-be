@@ -13,10 +13,30 @@ use Validator;
 class PermissionController extends BaseController
 {
     public function all () {
-      $permissions = Permission::select('id', 'name')
+      $permissions = Permission::select('id', '_token', 'name')
               ->orderBy('id', 'asc')
-              ->paginate(5);
+              ->where('id', '!=', 1)
+              ->get();
 
       return response()->json($permissions);
+    }
+
+    public function syncToRole ($token, Request $request) {
+      $role = Role::where('_token', $token)->first();
+
+      $arrPerm = [];
+      foreach ($request->all() as $permission) {
+        array_push($arrPerm, $permission['name']);
+      }
+
+      $role->syncPermissions($arrPerm);
+      $role->permissions;
+
+      $response = [
+        'data' => $role,
+        'message' => 'Permissions successfully synced to role "' . $role->name . '".'
+      ];
+
+      return response()->json($response, 200);
     }
 }
