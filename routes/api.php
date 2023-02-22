@@ -5,8 +5,11 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\PersonalAccessToken;
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\RoleController;
 use App\Http\Controllers\API\PermissionController;
+
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,14 +28,21 @@ Route::controller(AuthController::class)->group(function(){
   Route::post('logout', 'logout')->middleware('auth:sanctum');
 });
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-  $user = auth('sanctum')->user();
-  $user->roles;
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//   $user = auth('sanctum')->user();
+//   $user->roles;
 
-  return $user;
+//   return $user;
+// });
+
+Route::controller(UserController::class)->group(function () {
+  Route::group(['prefix' => '/user', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/', 'authUser');
+    Route::get('/get/{token}', 'userProfile');
+  });
 });
 
-Route::controller(RoleController::class)->group(function (){
+Route::controller(RoleController::class)->group(function () {
   Route::group(['prefix' => '/roles', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all');
     Route::get('/get/{token}', 'get');
@@ -42,7 +52,7 @@ Route::controller(RoleController::class)->group(function (){
   });
 });
 
-Route::controller(PermissionController::class)->group(function (){
+Route::controller(PermissionController::class)->group(function () {
   Route::group(['prefix' => '/permissions', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all');
     Route::put('/sync-to-role/{token}', 'syncToRole');
