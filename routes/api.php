@@ -28,17 +28,11 @@ Route::controller(AuthController::class)->group(function(){
   Route::post('logout', 'logout')->middleware('auth:sanctum');
 });
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//   $user = auth('sanctum')->user();
-//   $user->roles;
-
-//   return $user;
-// });
-
 Route::controller(UserController::class)->group(function () {
   Route::group(['prefix' => '/user', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'authUser');
     Route::get('/get/{token}', 'userProfile');
+    Route::put('/change-password/{token}', 'changePassword');
   });
 });
 
