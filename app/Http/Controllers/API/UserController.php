@@ -11,6 +11,22 @@ use Validator;
 
 class UserController extends BaseController
 {
+
+  public function all () {
+    $user = User::all();
+
+    $permissions = auth('sanctum')->user()->getAllPermissions();
+
+    $arrPerms = [];
+    foreach ($permissions as $permission) {
+      array_push($arrPerms, $permission->name);
+    }
+
+    // return $arrPerms;
+
+    return response()->json($user, 200);
+  }
+
   public function authUser (Request $request) {
     $user = auth('sanctum')->user();
     $user->roles;
@@ -57,4 +73,5 @@ class UserController extends BaseController
 
     return response()->json($response, 200);
   }
+
 }
