@@ -122,7 +122,7 @@ class UserController extends BaseController
     ]);
     if($validator->fails()) return response()->json($validator->errors(), 422);
 
-    // prevent altering super admin role
+    // prevent altering super admin user
     if ($user->id == 1) return response()->json(['message' => 'Forbidden! You cannot alter this record.'], 403);
 
     // then update
@@ -148,7 +148,7 @@ class UserController extends BaseController
     // fetch data
     $user = User::where('_token', $token)->first();
 
-    // prevent altering super admin role
+    // prevent altering super admin user
     if ($user->id == 1) return response()->json(['message' => 'Forbidden! You cannot alter this record.'], 403);
 
     // then delete
@@ -158,7 +158,7 @@ class UserController extends BaseController
     // return data to FE
     $response = [
       'data' => $savedUser,
-      'message' => '"' . $savedUser->name . '" role has been successfully deleted.'
+      'message' => '"' . $savedUser->name . '" user has been successfully deleted.'
     ];
 
     return response()->json($response);
