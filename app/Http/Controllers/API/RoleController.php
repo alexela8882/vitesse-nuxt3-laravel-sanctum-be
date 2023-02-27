@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 
+use App\Models\User;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
@@ -20,6 +21,18 @@ class RoleController extends BaseController
               ->where('id', '!=', 1)
               ->orderBy('id', 'asc')
               ->paginate(5);
+
+      return response()->json($roles);
+    }
+
+    public function uall () {
+      $roles = Role::select('id', '_token', 'name')
+              ->with(['permissions' => function ($qry) {
+                $qry->select('_token', 'name', '_token');
+              }])
+              ->where('id', '!=', 1)
+              ->orderBy('id', 'asc')
+              ->get();
 
       return response()->json($roles);
     }
@@ -68,7 +81,7 @@ class RoleController extends BaseController
       if($validator->fails()) return response()->json($validator->errors(), 422);
 
       // prevent altering super admin role
-      if ($role->id == 1) return response()->json('Forbidden', 403);
+      if ($role->id == 1) return response()->json(['message' => 'Forbidden! You cannot alter this record.'], 403);
 
       // then update
       $role->name = $request->name;
@@ -76,12 +89,12 @@ class RoleController extends BaseController
 
       // return data to FE
       $obj = Role::where('id', $role->id)->with(['permissions' => function ($qry) {
-        $qry->select('id', 'name');
+        $qry->select('id', 'name', '_token');
       }])->first();
 
       $response = [
         'data' => $obj,
-        'message' => '"' . $role->name . '" has been successfully updated.'
+        'message' => '"' . $request->name . '" has been successfully updated.'
       ];
 
       return response()->json($response);
@@ -92,7 +105,7 @@ class RoleController extends BaseController
       $role = Role::where('_token', $token)->first();
 
       // prevent altering super admin role
-      if ($role->id == 1) return response()->json('Forbidden', 403);
+      if ($role->id == 1) return response()->json(['message' => 'Forbidden! You cannot alter this record.'], 403);
 
       // then delete
       $savedRole = $role;
@@ -100,10 +113,29 @@ class RoleController extends BaseController
 
       // return data to FE
       $response = [
-        'data' => $role,
-        'message' => '"' . $role->name . '" role has been successfully deleted.'
+        'data' => $savedRole,
+        'message' => '"' . $savedRole->name . '" role has been successfully deleted.'
       ];
 
       return response()->json($response);
+    }
+
+    public function syncToUser ($token, Request $request) {
+      $user = User::where('_token', $token)->first();
+
+      $arrRole = [];
+      foreach ($request->all() as $role) {
+        array_push($arrRole, $role['name']);
+      }
+
+      $user->syncRoles($arrRole);
+      $user->roles;
+
+      $response = [
+        'data' => $user,
+        'message' => 'Permissions successfully synced to user "' . $user->name . '".'
+      ];
+
+      return response()->json($response, 200);
     }
 }

@@ -13,7 +13,9 @@ class UserController extends BaseController
 {
 
   public function all () {
-    $user = User::all();
+    $users = User::where('id', '!=', 1)
+              ->with('roles')
+              ->paginate(5);
 
     $permissions = auth('sanctum')->user()->getAllPermissions();
 
@@ -24,7 +26,16 @@ class UserController extends BaseController
 
     // return $arrPerms;
 
-    return response()->json($user, 200);
+    return response()->json($users, 200);
+  }
+
+  public function get ($token) {
+    $user = User::where('_token', $token)
+            ->select('id', '_token', 'name', 'email')
+            ->first();
+    $user->roles;
+
+    return response()->json($user);
   }
 
   public function authUser (Request $request) {
@@ -74,4 +85,82 @@ class UserController extends BaseController
     return response()->json($response, 200);
   }
 
+  public function store (Request $request) {
+    $validator = Validator::make($request->all(), [
+      'name' => 'required|unique:users,name',
+      'email' => 'required|unique:users,email',
+      'password' => 'required|min:6',
+    ]);
+
+    if($validator->fails()) return response()->json($validator->errors(), 422);
+
+    $user = new User;
+    $user->name = $request->name;
+    $user->email = $request->email;
+    $user->password = bcrypt($request->password);
+    $user->_token = generateRandomString();
+    $user->save();
+
+    $user->permissions; // get permissions
+
+    $response = [
+      'data' => $user,
+      'message' => '"' . $user->name . '" has been successfully added.'
+    ];
+
+    return response()->json($response);
+  }
+
+  public function update ($token, Request $request) {
+    // fetch data
+    $user = User::where('_token', $token)->first();
+
+    // run validation
+    $validator = Validator::make($request->all(), [
+      'name' => 'required|unique:users,name,'.$user->id,
+      'email' => 'required|unique:users,email,'.$user->id
+    ]);
+    if($validator->fails()) return response()->json($validator->errors(), 422);
+
+    // prevent altering super admin role
+    if ($user->id == 1) return response()->json(['message' => 'Forbidden! You cannot alter this record.'], 403);
+
+    // then update
+    $user->name = $request->name;
+    $user->email = $request->email;
+    if ($user->password !== null) $user->password = bcrypt($request->password);
+    $user->update();
+
+    // return data to FE
+    $obj = User::where('id', $user->id)->with(['permissions' => function ($qry) {
+      $qry->select('id', 'name', '_token');
+    }])->first();
+
+    $response = [
+      'data' => $obj,
+      'message' => 'User "' . $request->name . '" has been successfully updated.'
+    ];
+
+    return response()->json($response);
+  }
+
+  public function delete ($token) {
+    // fetch data
+    $user = User::where('_token', $token)->first();
+
+    // prevent altering super admin role
+    if ($user->id == 1) return response()->json(['message' => 'Forbidden! You cannot alter this record.'], 403);
+
+    // then delete
+    $savedUser = $user;
+    $user->delete();
+
+    // return data to FE
+    $response = [
+      'data' => $savedUser,
+      'message' => '"' . $savedUser->name . '" role has been successfully deleted.'
+    ];
+
+    return response()->json($response);
+  }
 }

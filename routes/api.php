@@ -31,15 +31,26 @@ Route::controller(AuthController::class)->group(function(){
 Route::controller(UserController::class)->group(function () {
   Route::group(['prefix' => '/user', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'authUser');
-    Route::get('/all', 'all')->middleware(['nd_permission:view user|add user|edit user|delete user']);
     Route::get('/get/{token}', 'userProfile');
     Route::put('/change-password/{token}', 'changePassword');
   });
 });
 
+Route::controller(UserController::class)->group(function () {
+  Route::group(['prefix' => '/users', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/', 'all')->middleware(['nd_permission:view user|add user|edit user|delete user']);
+    Route::get('/get/{token}', 'get')->middleware(['nd_permission:view user']);
+    Route::put('/store', 'store')->middleware(['nd_permission:add user']);
+    Route::post('/update/{token}', 'update')->middleware(['nd_permission:edit user']);
+    Route::delete('/delete/{token}', 'delete')->middleware(['nd_permission:delete user']);
+  });
+});
+
 Route::controller(RoleController::class)->group(function () {
-  Route::group(['prefix' => '/roles', 'middleware' => ['auth:sanctum', 'nd_permission:assign role']], function () {
+  Route::group(['prefix' => '/roles', 'middleware' => ['auth:sanctum', 'nd_permission:assign role|assign permission']], function () {
     Route::get('/', 'all');
+    Route::put('/sync-to-user/{token}', 'syncToUser');
+    Route::get('/lists', 'uall');
     Route::get('/get/{token}', 'get');
     Route::put('/store', 'store');
     Route::post('/update/{token}', 'update');
