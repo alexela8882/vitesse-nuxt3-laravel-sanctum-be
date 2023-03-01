@@ -128,7 +128,7 @@ class UserController extends BaseController
     // then update
     $user->name = $request->name;
     $user->email = $request->email;
-    if ($user->password !== null) $user->password = bcrypt($request->password);
+    if ($user->password !== null || $user->password !== '') $user->password = bcrypt($request->password);
     $user->update();
 
     // return data to FE
