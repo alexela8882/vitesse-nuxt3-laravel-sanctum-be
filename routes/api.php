@@ -8,6 +8,10 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\UserController;
 use App\Http\Controllers\API\RoleController;
 use App\Http\Controllers\API\PermissionController;
+use App\Http\Controllers\API\CountryController;
+use App\Http\Controllers\API\CompanyController;
+use App\Http\Controllers\API\PositionController;
+use App\Http\Controllers\API\UserInfoController;
 
 use App\Models\User;
 
@@ -59,10 +63,34 @@ Route::controller(RoleController::class)->group(function () {
 });
 
 Route::controller(PermissionController::class)->group(function () {
-  Route::group(['prefix' => '/permissions', 'middleware' => ['auth:sanctum']], function () {
+  Route::group(['prefix' => '/permissions', 'middleware' => ['auth:sanctum', 'nd_permission:assign role|assign permission']], function () {
     Route::get('/', 'all');
     Route::put('/sync-to-role/{token}', 'syncToRole');
     Route::post('/update/{token}', 'update');
     Route::delete('/delete/{token}', 'delete');
+  });
+});
+
+Route::controller(CountryController::class)->group(function () {
+  Route::group(['prefix' => '/countries', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/', 'all');
+  });
+});
+
+Route::controller(CompanyController::class)->group(function () {
+  Route::group(['prefix' => '/companies', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/', 'all');
+  });
+});
+
+Route::controller(PositionController::class)->group(function () {
+  Route::group(['prefix' => '/positions', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/', 'all');
+  });
+});
+
+Route::controller(UserInfoController::class)->group(function () {
+  Route::group(['prefix' => '/user-infos', 'middleware' => ['auth:sanctum']], function () {
+    Route::post('/update/{token}', 'update');
   });
 });

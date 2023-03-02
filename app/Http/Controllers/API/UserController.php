@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 
 use App\Models\User;
+use App\Models\UserInfo;
 
 use Validator;
 
@@ -15,6 +16,7 @@ class UserController extends BaseController
   public function all () {
     $users = User::where('id', '!=', 1)
               ->with('roles')
+              ->with('info')
               ->paginate(5);
 
     $permissions = auth('sanctum')->user()->getAllPermissions();
@@ -32,6 +34,7 @@ class UserController extends BaseController
   public function get ($token) {
     $user = User::where('_token', $token)
             ->select('id', '_token', 'name', 'email')
+            ->with('info')
             ->first();
     $user->roles;
 
@@ -128,7 +131,7 @@ class UserController extends BaseController
     // then update
     $user->name = $request->name;
     $user->email = $request->email;
-    if ($user->password !== null || $user->password !== '') $user->password = bcrypt($request->password);
+    if ($request->password != null || $request->password != '') $user->password = bcrypt($request->password);
     $user->update();
 
     // return data to FE
@@ -151,8 +154,13 @@ class UserController extends BaseController
     // prevent altering super admin user
     if ($user->id == 1) return response()->json(['message' => 'Forbidden! You cannot alter this record.'], 403);
 
-    // then delete
     $savedUser = $user;
+
+    // delete user info first
+    $userInfo = UserInfo::where('user_id', $user->id)->first();
+    if ($userInfo) $userInfo->delete();
+
+    // then delete user
     $user->delete();
 
     // return data to FE
