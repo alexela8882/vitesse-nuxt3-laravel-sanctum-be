@@ -12,6 +12,7 @@ use App\Http\Controllers\API\CountryController;
 use App\Http\Controllers\API\CompanyController;
 use App\Http\Controllers\API\PositionController;
 use App\Http\Controllers\API\UserInfoController;
+use App\Http\Controllers\API\GalleryController;
 
 use App\Models\User;
 
@@ -92,5 +93,15 @@ Route::controller(PositionController::class)->group(function () {
 Route::controller(UserInfoController::class)->group(function () {
   Route::group(['prefix' => '/user-infos', 'middleware' => ['auth:sanctum']], function () {
     Route::post('/update/{token}', 'update');
+  });
+});
+
+Route::controller(GalleryController::class)->group(function () {
+  Route::group(['prefix' => '/galleries', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/', 'all');
+    Route::get('/get/{token}', 'get');
+    Route::put('/store', 'store');
+    Route::post('/update/{token}', 'update');
+    Route::delete('/delete/{token}', 'delete');
   });
 });
