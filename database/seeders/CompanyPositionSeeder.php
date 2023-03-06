@@ -4,11 +4,10 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 
-use App\Models\Country;
 use App\Models\Company;
 use App\Models\Position;
 
-class CountryCompanyPositionSeeder extends Seeder
+class CompanyPositionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -17,25 +16,6 @@ class CountryCompanyPositionSeeder extends Seeder
      */
     public function run()
     {
-
-        // COUNTRIES
-        $country = new Country;
-        $country->name = 'Philippines';
-        $country->code = 'PH';
-        $country->_token = generateRandomString();
-        $country->save();
-
-        $country = new Country;
-        $country->name = 'Singapore';
-        $country->code = 'SG';
-        $country->_token = generateRandomString();
-        $country->save();
-
-        $country = new Country;
-        $country->name = 'Indonesia';
-        $country->code = 'ID';
-        $country->_token = generateRandomString();
-        $country->save();
 
         // COMPANIES
         $company = new Company;
