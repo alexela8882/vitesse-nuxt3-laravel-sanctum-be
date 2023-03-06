@@ -16,11 +16,7 @@ class CreateGalleriesTable extends Migration
         Schema::create('galleries', function (Blueprint $table) {
           $table->id();
           $table->integer('parent_id')->unsigned()->nullable();
-          $table->foreignId('user_id')->constrained('users')->unsigned();
-          $table->foreignId('country_id')->constrained('countries')->unsigned();
           $table->string('name');
-          $table->string('description');
-          $table->string('date');
           $table->string('_token');
           $table->timestamps();
         });
