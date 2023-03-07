@@ -99,9 +99,12 @@ Route::controller(UserInfoController::class)->group(function () {
 Route::controller(GalleryController::class)->group(function () {
   Route::group(['prefix' => '/galleries', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all');
+    Route::get('/lists-e/{token}', 'listsE');
+    Route::get('/lists-parent/{token}', 'allParents');
     Route::get('/get/{token}', 'get');
     Route::put('/store', 'store');
     Route::post('/update/{token}', 'update');
+    Route::post('/sync/{token}', 'sync');
     Route::delete('/delete/{token}', 'delete');
   });
 });

@@ -17,10 +17,25 @@ class GalleryController extends BaseController
       return $galleries;
     }
 
+    public function listsE ($token) {
+      $galleries = Gallery::where('_token', '!=', $token)->get();
+
+      return response()->json($galleries, 200);
+    }
+
+    public function allParents ($token) {
+      $galleries = Gallery::where('_token', '!=', $token)->where('parent_id', null)->get();
+
+      return response()->json($galleries, 200);
+    }
+
     public function get ($token) {
       $gallery = Gallery::where('_token', $token)
-              ->select('id', '_token', 'name')
+              ->select('id', 'parent_id', '_token', 'name')
               ->first();
+
+      $subgalleries = Gallery::where('parent_id', $gallery->id)->get();
+      $gallery->subgalleries = $subgalleries;
   
       return response()->json($gallery);
     }
@@ -65,6 +80,39 @@ class GalleryController extends BaseController
       ];
   
       return response()->json($response);
+    }
+
+    public function sync ($token, Request $request) {
+      if ($request->parent) {
+        // update this gallery
+        $gallery = Gallery::where('_token', $token)->first();
+        $gallery->parent_id = $request->parent;
+        $gallery->update();
+
+        // revoke sub-galleries of this gallery
+        Gallery::where('parent_id', $gallery->id)->update(['parent_id' => null]);
+      } else {
+        // update this gallery
+        $gallery = Gallery::where('_token', $token)->first();
+        $gallery->parent_id = null;
+        $gallery->update();
+
+        // revoke sub-galleries of this gallery
+        Gallery::where('parent_id', $gallery->id)->update(['parent_id' => null]);
+
+        // re-populate gallery with selected sub-galleries
+        if (count($request->subs) > 0) {
+          foreach ($request->subs as $sub) {
+            Gallery::where('id', $sub['id'])->update(['parent_id' => $gallery->id]);
+          }
+        }
+      }
+
+      $response = [
+        'data' => $gallery,
+        'message' => '"' . $gallery->name . '" gallery has been successfully updated.'
+      ];
+      return response()->json($response, 200);
     }
 
     public function delete ($token) {
