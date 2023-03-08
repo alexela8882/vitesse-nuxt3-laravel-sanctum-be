@@ -16,7 +16,7 @@ class CreatePositionsTable extends Migration
         Schema::create('positions', function (Blueprint $table) {
           $table->id();
           $table->string('name');
-          $table->string('_token');
+          $table->string('_token')->default(generateRandomString());
           $table->timestamps();
         });
     }

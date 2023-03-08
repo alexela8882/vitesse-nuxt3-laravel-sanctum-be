@@ -17,7 +17,7 @@ class CreateGalleriesTable extends Migration
           $table->id();
           $table->integer('parent_id')->unsigned()->nullable();
           $table->string('name');
-          $table->string('_token');
+          $table->string('_token')->default(generateRandomString());
           $table->timestamps();
         });
     }

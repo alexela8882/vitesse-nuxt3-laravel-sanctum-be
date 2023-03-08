@@ -22,7 +22,7 @@ class CreateAlbumsTable extends Migration
           $table->longtext('description');
           $table->datetime('event_date');
           $table->longtext('img_path');
-          $table->string('_token');
+          $table->string('_token')->default(generateRandomString());
           $table->timestamps();
         });
     }
