@@ -13,6 +13,7 @@ use App\Http\Controllers\API\CompanyController;
 use App\Http\Controllers\API\PositionController;
 use App\Http\Controllers\API\UserInfoController;
 use App\Http\Controllers\API\GalleryController;
+use App\Http\Controllers\API\AlbumController;
 
 use App\Models\User;
 
@@ -99,6 +100,7 @@ Route::controller(UserInfoController::class)->group(function () {
 Route::controller(GalleryController::class)->group(function () {
   Route::group(['prefix' => '/galleries', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all');
+    Route::get('/albums/{token}', 'albums');
     Route::get('/lists-e/{token}', 'listsE');
     Route::get('/lists-parent/{token}', 'allParents');
     Route::get('/get/{token}', 'get');
@@ -106,5 +108,11 @@ Route::controller(GalleryController::class)->group(function () {
     Route::post('/update/{token}', 'update');
     Route::post('/sync/{token}', 'sync');
     Route::delete('/delete/{token}', 'delete');
+  });
+});
+
+Route::controller(AlbumController::class)->group(function () {
+  Route::group(['prefix' => '/albums', 'middleware' => ['auth:sanctum']], function () {
+    Route::put('/store/{token}', 'store');
   });
 });

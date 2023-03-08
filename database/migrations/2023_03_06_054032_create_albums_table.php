@@ -16,11 +16,13 @@ class CreateAlbumsTable extends Migration
         Schema::create('albums', function (Blueprint $table) {
           $table->id();
           $table->string('title');
-          $table->foreignId('gallery_id')->constrained('galleries')->unsigned();
+          $table->foreignId('user_id')->constrained('users')->unsigned();
           $table->foreignId('country_id')->constrained('countries')->unsigned();
           $table->string('venue');
           $table->longtext('description');
           $table->datetime('event_date');
+          $table->longtext('img_path');
+          $table->string('_token');
           $table->timestamps();
         });
     }

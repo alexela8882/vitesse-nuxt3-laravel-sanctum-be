@@ -5,7 +5,9 @@ namespace App\Http\Controllers\API;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 
+use App\Models\Album;
 use App\Models\Gallery;
+use App\Models\GalleryAlbumMap as GAMap;
 
 use Validator;
 
@@ -131,5 +133,31 @@ class GalleryController extends BaseController
       ];
   
       return response()->json($response);
+    }
+
+    public function albums ($token) {
+      $galleryArr = [];
+
+      // get main gallery
+      $gallery = Gallery::where('_token', $token)->first();
+
+      // push main gallery
+      array_push($galleryArr, $gallery->id);
+
+      // push subs-galleries
+      $subgalleries = Gallery::where('parent_id', $gallery->id)->pluck('id');
+      foreach ($subgalleries as $subgallery) array_push($galleryArr, $subgallery);
+
+      // get album ids from map
+      $album_ids = GAMap::whereIn('gallery_id', $galleryArr)->pluck('album_id');
+
+      // get albums
+      $albums = Album::whereIn('id', $album_ids)
+                ->with(['gallerymaps' => function ($qry) {
+                  $qry->with('gallery');
+                }])
+                ->with('country')->get();
+
+      return response()->json($albums, 200);
     }
 }
