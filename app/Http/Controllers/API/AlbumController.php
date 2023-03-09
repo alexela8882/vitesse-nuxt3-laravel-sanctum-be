@@ -68,6 +68,9 @@ class AlbumController extends BaseController
         }
       }
 
+      // sync tags
+      foreach ($request->tags as $tag) $album->attachTag($tag['name']['en'], $tag['type']);
+
       $response = [
         'data' => $album,
         'message' => 'Album "' . $album->title . '" has been successfully added in our records.'

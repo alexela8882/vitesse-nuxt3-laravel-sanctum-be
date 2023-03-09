@@ -113,6 +113,10 @@ class GalleryController extends BaseController
         }
       }
 
+      // sync tags
+      $gallery->syncTags([]); // reset first
+      foreach ($request->tags as $tag) $gallery->attachTag($tag['name']['en'], $tag['type']);
+
       $response = [
         'data' => $gallery,
         'message' => '"' . $gallery->name . '" gallery has been successfully updated.'
@@ -159,7 +163,9 @@ class GalleryController extends BaseController
                 ->with(['gallerymaps' => function ($qry) {
                   $qry->with('gallery');
                 }])
-                ->with('country')->get();
+                ->with('country')
+                ->with('tags')
+                ->get();
 
       return response()->json($albums, 200);
     }

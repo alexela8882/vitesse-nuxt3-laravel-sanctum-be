@@ -4,12 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Tags\HasTags;
 
 use Carbon\Carbon;
 
 class Album extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTags;
 
     public function getEventDateAttribute($value) {
         $carbon = new Carbon($value);
