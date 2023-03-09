@@ -14,6 +14,7 @@ use App\Http\Controllers\API\PositionController;
 use App\Http\Controllers\API\UserInfoController;
 use App\Http\Controllers\API\GalleryController;
 use App\Http\Controllers\API\AlbumController;
+use App\Http\Controllers\API\TagController;
 
 use App\Models\User;
 
@@ -114,5 +115,12 @@ Route::controller(GalleryController::class)->group(function () {
 Route::controller(AlbumController::class)->group(function () {
   Route::group(['prefix' => '/albums', 'middleware' => ['auth:sanctum']], function () {
     Route::put('/store/{token}', 'store');
+  });
+});
+
+Route::controller(TagController::class)->group(function () {
+  Route::group(['prefix' => '/tags', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/', 'all');
+    Route::put('/store', 'store');
   });
 });

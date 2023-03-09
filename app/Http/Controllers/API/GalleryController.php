@@ -9,6 +9,8 @@ use App\Models\Album;
 use App\Models\Gallery;
 use App\Models\GalleryAlbumMap as GAMap;
 
+use Spatie\Tags\Tag;
+
 use Validator;
 
 class GalleryController extends BaseController
@@ -34,6 +36,7 @@ class GalleryController extends BaseController
     public function get ($token) {
       $gallery = Gallery::where('_token', $token)
               ->select('id', 'parent_id', '_token', 'name')
+              ->with('tags')
               ->first();
 
       $subgalleries = Gallery::where('parent_id', $gallery->id)->get();
