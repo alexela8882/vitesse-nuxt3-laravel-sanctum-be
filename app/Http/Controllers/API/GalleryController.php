@@ -39,7 +39,7 @@ class GalleryController extends BaseController
               ->with('tags')
               ->first();
 
-      $subgalleries = Gallery::where('parent_id', $gallery->id)->get();
+      $subgalleries = Gallery::where('parent_id', $gallery->id)->with('tags')->get();
       $gallery->subgalleries = $subgalleries;
   
       return response()->json($gallery);

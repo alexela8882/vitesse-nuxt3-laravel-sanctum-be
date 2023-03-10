@@ -62,14 +62,19 @@ class AlbumController extends BaseController
       if (count($request->subgalleries) > 0) {
         foreach ($request->subgalleries as $subgallery) {
           $gamap = new GAMap;
-          $gamap->gallery_id = $subgallery;
+          $gamap->gallery_id = $subgallery['id'];
           $gamap->album_id = $album->id;
           $gamap->save();
         }
       }
 
+      // collect all tags from main-gallery tag and sub-gallery tags
+      $allTags = [];
+      foreach ($request->tags as $tag) array_push($allTags, $tag);
+      foreach ($request->subgallerytags as $subtag) array_push($allTags, $subtag);
+
       // sync tags
-      foreach ($request->tags as $tag) $album->attachTag($tag['name']['en'], $tag['type']);
+      foreach ($allTags as $allTag) $album->attachTag($allTag['name']['en'], $allTag['type']);
 
       $response = [
         'data' => $album,
