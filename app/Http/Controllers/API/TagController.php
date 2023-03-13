@@ -17,6 +17,12 @@ class TagController extends BaseController
       return response()->json($tags, 200);
     }
 
+    public function withoutType () {
+      $tags = Tag::where('type', null)->get();
+
+      return response()->json($tags, 200);
+    }
+
     public function store (Request $request) {
       $validator = Validator::make($request->all(), [
         'name' => 'required|unique:tags,name',

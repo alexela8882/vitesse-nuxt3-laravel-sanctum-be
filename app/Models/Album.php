@@ -24,4 +24,8 @@ class Album extends Model
     public function gallerymaps () {
       return $this->hasMany(GalleryAlbumMap::class);
     }
+
+    public function photos () {
+      return $this->hasMany(Photo::class);
+    }
 }

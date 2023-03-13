@@ -15,6 +15,12 @@ use Validator;
 
 class GalleryController extends BaseController
 {
+    public function uall () {
+      $galleries = Gallery::with('tags')->get();
+
+      return response()->json($galleries, 200);
+    }
+
     public function all () {
       $galleries = Gallery::where('parent_id', null)->paginate(5);
 
@@ -174,7 +180,7 @@ class GalleryController extends BaseController
                 }])
                 ->with('country')
                 ->with('tags')
-                ->paginate(2);
+                ->paginate(5);
 
       return response()->json($albums, 200);
     }

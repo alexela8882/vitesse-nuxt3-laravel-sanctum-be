@@ -100,6 +100,7 @@ Route::controller(UserInfoController::class)->group(function () {
 
 Route::controller(GalleryController::class)->group(function () {
   Route::group(['prefix' => '/galleries', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/all-unpaginated', 'uall');
     Route::get('/', 'all');
     Route::get('/albums/{token}', 'albums');
     Route::get('/lists-e/{token}', 'listsE');
@@ -114,6 +115,7 @@ Route::controller(GalleryController::class)->group(function () {
 
 Route::controller(AlbumController::class)->group(function () {
   Route::group(['prefix' => '/albums', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/get/{token}', 'get');
     Route::put('/store/{token}', 'store');
   });
 });
@@ -121,6 +123,7 @@ Route::controller(AlbumController::class)->group(function () {
 Route::controller(TagController::class)->group(function () {
   Route::group(['prefix' => '/tags', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all');
+    Route::get('/without-type', 'withoutType');
     Route::put('/store', 'store');
   });
 });
