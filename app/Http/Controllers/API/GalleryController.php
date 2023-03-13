@@ -33,7 +33,7 @@ class GalleryController extends BaseController
       return response()->json($galleries, 200);
     }
 
-    public function get ($token) {
+    public function generalGet ($token) {
       $gallery = Gallery::where('_token', $token)
               ->select('id', 'parent_id', '_token', 'name')
               ->with('tags')
@@ -41,6 +41,12 @@ class GalleryController extends BaseController
 
       $subgalleries = Gallery::where('parent_id', $gallery->id)->with('tags')->get();
       $gallery->subgalleries = $subgalleries;
+
+      return $gallery;
+    }
+
+    public function get ($token) {
+      $gallery = $this->generalGet($token);
   
       return response()->json($gallery);
     }
@@ -88,10 +94,10 @@ class GalleryController extends BaseController
     }
 
     public function sync ($token, Request $request) {
-      if ($request->parent) {
+      if ($request->gallery['parent_id']) {
         // update this gallery
         $gallery = Gallery::where('_token', $token)->first();
-        $gallery->parent_id = $request->parent;
+        $gallery->parent_id = $request->gallery['parent_id'];
         $gallery->update();
 
         // revoke sub-galleries of this gallery
@@ -117,7 +123,10 @@ class GalleryController extends BaseController
       $gallery->syncTags([]); // reset first
       foreach ($request->tags as $tag) $gallery->attachTag($tag['name']['en'], $tag['type']);
 
+      $_gallery = $this->generalGet($gallery->_token);
+
       $response = [
+        '_gallery' => $_gallery,
         'data' => $gallery,
         'message' => '"' . $gallery->name . '" gallery has been successfully updated.'
       ];
@@ -165,7 +174,7 @@ class GalleryController extends BaseController
                 }])
                 ->with('country')
                 ->with('tags')
-                ->get();
+                ->paginate(2);
 
       return response()->json($albums, 200);
     }
