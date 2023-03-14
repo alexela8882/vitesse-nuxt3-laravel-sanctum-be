@@ -17,7 +17,7 @@ use Validator;
 class AlbumController extends BaseController
 {
 
-    public function get ($token) {
+    public  function _get ($token) {
       $album = Album::where('_token', $token)
               ->with('photos')
               ->with('gallerymaps')
@@ -25,11 +25,13 @@ class AlbumController extends BaseController
               ->first();
 
       $arrGalleries = [];
-      foreach ($album->gallerymaps as $map) {
-        $gallery = Gallery::where('id', $map->gallery_id)
-                  ->with('tags')
-                  ->first();
-        array_push($arrGalleries, $gallery);
+      if (count($album->gallerymaps) > 0) {
+        foreach ($album->gallerymaps as $map) {
+          $gallery = Gallery::where('id', $map->gallery_id)
+                    ->with('tags')
+                    ->first();
+          array_push($arrGalleries, $gallery);
+        }
       }
 
       $arrTags = [];
@@ -40,6 +42,11 @@ class AlbumController extends BaseController
       $album->galleries = $arrGalleries;
       $album->other_tags = $arrTags;
 
+      return $album;
+    }
+
+    public function get ($token) {
+      $album = $this->_get($token);
       return response()->json($album, 200);
     }
 
@@ -116,6 +123,8 @@ class AlbumController extends BaseController
       // sync tags
       foreach ($allTags as $allTag) $album->attachTag($allTag['name']['en'], $allTag['type']);
 
+      $album->tags;
+
       $response = [
         'data' => $album,
         'message' => 'Album "' . $album->title . '" has been successfully added in our records.'
@@ -181,9 +190,11 @@ class AlbumController extends BaseController
       $album->syncTags([]); // reset first
       foreach ($allTags as $allTag) $album->attachTag($allTag['name']['en'], $allTag['type']);
 
+      $_album = $this->_get($album->_token);
+
       $response = [
-        'data' => $album,
-        'message' => 'Album "' . $album->title . '" has been successfully updated.'
+        'data' => $_album,
+        'message' => 'Album "' . $_album->title . '" has been successfully updated.'
       ];
 
       return response()->json($response, 200);
