@@ -123,4 +123,69 @@ class AlbumController extends BaseController
 
       return response()->json($response, 200);
     }
+
+    public function update ($token, Request $request) {
+      $rules = [
+        'title' => 'required|unique:albums,title,'.$request->id,
+        'country_id' => 'required',
+        'venue' => 'required',
+        'event_date' => 'required',
+        'description' => 'required',
+        'img_path' => 'required',
+      ];
+  
+      $message = [
+        'title.required' => 'This field is required.',
+        'title.unique' => 'Ttitle already taken. Please choose another title.',
+        'country_id.required' => 'This field is required.',
+        'venue.required' => 'This field is required.',
+        'event_date.required' => 'This field is required.',
+        'description.required' => 'This field is required.',
+        'img_path.required' => 'Please upload image.',
+      ];
+
+      $validator = Validator::make($request->all(), $rules, $message);
+  
+      if($validator->fails()) return response()->json($validator->errors(), 422);
+
+      $user = auth('sanctum')->user();
+
+      $album = Album::where('_token', $token)->first();
+      $album->user_id = $user->id;
+      $album->title = $request->title;
+      $album->description = $request->description;
+      $album->country_id = $request->country_id;
+      $album->venue = $request->venue;
+      $album->event_date = Carbon::parse($request->event_date)->format('Y-m-d h:i:s');
+      $album->img_path = $request->img_path;
+      $album->update();
+
+      // delete current maps first
+      GAMap::where('album_id', $album->id)->delete();
+      // save galleries as tag
+      if (count($request->subgalleries) > 0) {
+        foreach ($request->subgalleries as $subgallery) {
+          $gamap = new GAMap;
+          $gamap->gallery_id = $subgallery['id'];
+          $gamap->album_id = $album->id;
+          $gamap->save();
+        }
+      }
+
+      // collect all tags from album tags and gallery tags
+      $allTags = [];
+      foreach ($request->tags as $tag) array_push($allTags, $tag);
+      foreach ($request->subgallerytags as $subtag) array_push($allTags, $subtag);
+
+      // sync tags
+      $album->syncTags([]); // reset first
+      foreach ($allTags as $allTag) $album->attachTag($allTag['name']['en'], $allTag['type']);
+
+      $response = [
+        'data' => $album,
+        'message' => 'Album "' . $album->title . '" has been successfully updated.'
+      ];
+
+      return response()->json($response, 200);
+    }
 }

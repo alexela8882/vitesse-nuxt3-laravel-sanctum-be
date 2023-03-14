@@ -117,6 +117,7 @@ Route::controller(AlbumController::class)->group(function () {
   Route::group(['prefix' => '/albums', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/get/{token}', 'get');
     Route::put('/store/{token}', 'store');
+    Route::post('/update/{token}', 'update');
   });
 });
 
