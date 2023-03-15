@@ -20,8 +20,11 @@ class AlbumController extends BaseController
     public  function _get ($token) {
       $album = Album::where('_token', $token)
               ->with('photos')
-              ->with('gallerymaps')
+              ->with(['gallerymaps' => function ($qry) {
+                $qry->with('gallery');
+              }])
               ->with('tags')
+              ->with('country')
               ->first();
 
       $arrGalleries = [];
