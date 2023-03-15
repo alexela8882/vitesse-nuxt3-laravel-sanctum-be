@@ -202,4 +202,31 @@ class AlbumController extends BaseController
 
       return response()->json($response, 200);
     }
+
+    public function addPhoto ($token, Request $request) {
+      // get album
+      $album = Album::where('_token', $token)->first();
+
+      // get current user
+      $user = auth('sanctum')->user();
+
+      $photo = new Photo;
+      $photo->user_id = $user->id;
+      $photo->album_id = $album->id;
+      $photo->file_name = $request->image;
+      $photo->file_size = 10;
+      $photo->file_type = 'img/png';
+      $photo->description = $request->description;
+      $photo->_token = generateRandomString();
+      $photo->save();
+
+      $photo->album = $album;
+
+      $response = [
+        'data' => $photo,
+        'message' => 'Success!',
+      ];
+
+      return response()->json($response);
+    }
 }
