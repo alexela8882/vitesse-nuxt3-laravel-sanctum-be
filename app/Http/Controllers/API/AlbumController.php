@@ -207,6 +207,19 @@ class AlbumController extends BaseController
       // get album
       $album = Album::where('_token', $token)->first();
 
+      $rules = [
+        'image' => 'required',
+        'description' => 'required'
+      ];
+  
+      $message = [
+        'image.required' => 'Please upload an image.',
+        'description.required' => 'This field is required.',
+      ];
+      $validator = Validator::make($request->all(), $rules, $message);
+  
+      if($validator->fails()) return response()->json($validator->errors(), 422);
+
       // get current user
       $user = auth('sanctum')->user();
 
@@ -228,5 +241,15 @@ class AlbumController extends BaseController
       ];
 
       return response()->json($response);
+    }
+
+    // paginated photos
+    public function pphotos ($token) {
+      // get album
+      $album = Album::where('_token', $token)->first();
+
+      $photos = Photo::where('album_id', $album->id)->paginate(6);
+
+      return response()->json($photos, 200);
     }
 }

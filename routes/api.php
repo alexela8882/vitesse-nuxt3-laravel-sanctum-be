@@ -120,6 +120,7 @@ Route::controller(AlbumController::class)->group(function () {
     Route::put('/store/{token}', 'store');
     Route::post('/update/{token}', 'update');
     Route::put('/add-photo/{token}', 'addPhoto');
+    Route::get('/paginated-photos/{token}', 'pphotos');
   });
 });
 

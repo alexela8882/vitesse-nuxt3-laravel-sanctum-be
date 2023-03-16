@@ -13,6 +13,7 @@ use Validator;
 
 class PhotoController extends BaseController
 {
+
     public  function _get ($token) {
       $photo = Photo::where('_token', $token)
               ->with(['gallerymaps' => function ($qry) {
