@@ -16,6 +16,7 @@ use App\Http\Controllers\API\GalleryController;
 use App\Http\Controllers\API\AlbumController;
 use App\Http\Controllers\API\PhotoController;
 use App\Http\Controllers\API\TagController;
+use App\Http\Controllers\API\RegionController;
 
 use App\Models\User;
 
@@ -104,6 +105,7 @@ Route::controller(GalleryController::class)->group(function () {
     Route::get('/all-unpaginated', 'uall');
     Route::get('/', 'all');
     Route::get('/albums/{token}', 'albums');
+    Route::post('/filtered-albums/{token}', 'filteredAlbums');
     Route::get('/lists-e/{token}', 'listsE');
     Route::get('/lists-parent/{token}', 'allParents');
     Route::get('/get/{token}', 'get');
@@ -136,5 +138,11 @@ Route::controller(TagController::class)->group(function () {
     Route::get('/', 'all');
     Route::get('/without-type', 'withoutType');
     Route::put('/store', 'store');
+  });
+});
+
+Route::controller(RegionController::class)->group(function () {
+  Route::group(['prefix' => '/regions', 'middleware' => ['auth:sanctum']], function () {
+    Route::get('/', 'all');
   });
 });

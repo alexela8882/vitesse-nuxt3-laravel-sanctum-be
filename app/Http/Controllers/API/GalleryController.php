@@ -170,8 +170,16 @@ class GalleryController extends BaseController
       $subgalleries = Gallery::where('parent_id', $gallery->id)->pluck('id');
       foreach ($subgalleries as $subgallery) array_push($galleryArr, $subgallery);
 
-      // get album ids from map
-      $album_ids = GAMap::whereIn('gallery_id', $galleryArr)->pluck('album_id');
+      // get gallery album ids from map
+      $gallery_album_ids = GAMap::where('gallery_id', $gallery->id)->pluck('album_id');
+
+      // get final album ids based on gallery
+      $album_ids = GAMap::whereIn('album_id', $gallery_album_ids)
+                    ->where(function($qry) use ($galleryArr) {
+                      if(count($galleryArr)) {
+                        $qry->whereIn('gallery_id', $galleryArr);
+                      }
+                    })->pluck('album_id');
 
       // get albums
       $albums = Album::whereIn('id', $album_ids)
@@ -182,6 +190,66 @@ class GalleryController extends BaseController
                 ->with('tags')
                 ->paginate(5);
 
-      return response()->json($albums, 200);
+      // insert method here
+      $custom = collect(['method' => 'GET']);
+      $data = $custom->merge($albums);
+
+      return response()->json($data, 200);
+    }
+
+    public function filteredAlbums ($token, Request $request) {
+      $galleryArr = [];
+      $countryArr = [];
+
+      // get main gallery
+      $gallery = Gallery::where('_token', $token)->first();
+
+      // push main gallery
+      // array_push($galleryArr, $gallery->id);
+
+      // push filtered galleries
+      if ($request->filter['galleries']) {
+        foreach ($request->filter['galleries'] as $fgallery) {
+          array_push($galleryArr, $fgallery['id']);
+        }
+      }
+
+      // push filtered countries
+      if ($request->filter['countries']) {
+        foreach ($request->filter['countries'] as $fcountry) {
+          array_push($countryArr, $fcountry['id']);
+        }
+      }
+
+      // get gallery album ids from map
+      $gallery_album_ids = GAMap::where('gallery_id', $gallery->id)->pluck('album_id');
+
+      // get final album ids based on gallery
+      $album_ids = GAMap::whereIn('album_id', $gallery_album_ids)
+                    ->where(function($qry) use ($galleryArr) {
+                      if(count($galleryArr)) {
+                        $qry->whereIn('gallery_id', $galleryArr);
+                      }
+                    })->pluck('album_id');
+
+      // get albums
+      $albums = Album::whereIn('id', $album_ids)
+                ->where(function($qry) use ($countryArr) {
+                  if(count($countryArr)) {
+                    $qry->whereIn('country_id', $countryArr);
+                  }
+                })
+                ->with(['gallerymaps' => function ($qry) {
+                  $qry->with('gallery');
+                }])
+                ->with('country')
+                ->with('tags')
+                ->paginate(5);
+
+      // insert method here
+      $custom = collect(['method' => 'POST']);
+      $data = $custom->merge($albums);
+
+      return response()->json($data, 200);
     }
 }
