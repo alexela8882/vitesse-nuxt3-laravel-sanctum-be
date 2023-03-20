@@ -200,12 +200,7 @@ class GalleryController extends BaseController
     public function filteredAlbums ($token, Request $request) {
       $galleryArr = [];
       $countryArr = [];
-
-      // get main gallery
-      $gallery = Gallery::where('_token', $token)->first();
-
-      // push main gallery
-      // array_push($galleryArr, $gallery->id);
+      $tagArr = [];
 
       // push filtered galleries
       if ($request->filter['galleries']) {
@@ -221,20 +216,45 @@ class GalleryController extends BaseController
         }
       }
 
-      // get gallery album ids from map
+      // push filtered tags
+      if ($request->filter['tags']) {
+        foreach ($request->filter['tags'] as $ftag) {
+          array_push($tagArr, $ftag['name']['en']);
+        }
+      }
+
+      // get main gallery
+      $gallery = Gallery::where('_token', $token)->first();
+
+      // get gallery album ids from map based on main gallery
       $gallery_album_ids = GAMap::where('gallery_id', $gallery->id)->pluck('album_id');
 
-      // get final album ids based on gallery
+      // get final gallery album ids based on gallery from maps
       $album_ids = GAMap::whereIn('album_id', $gallery_album_ids)
                     ->where(function($qry) use ($galleryArr) {
                       if(count($galleryArr)) {
                         $qry->whereIn('gallery_id', $galleryArr);
                       }
-                    })->pluck('album_id');
+                    })
+                    ->pluck('album_id');
+
+      // get tagged album ids
+      $tagged_album_ids = Album::withAllTagsOfAnyType($tagArr)
+                          ->where(function($qry) use ($tagArr, $album_ids) {
+                            if(count($tagArr)) {
+                              $qry->whereIn('id', $album_ids);
+                            }
+                          })
+                          ->pluck('id');
 
       // get albums
-      $albums = Album::whereIn('id', $album_ids)
-                ->where(function($qry) use ($countryArr) {
+      $albums = Album::whereIn('id', $tagged_album_ids)
+                ->where(function ($qry) use ($request) {
+                  if(count($request->filter['dates'])) {
+                    $qry->whereIn(\DB::raw("DATE(event_date)"), $request->filter['dates']);
+                  }
+                })
+                ->where(function ($qry) use ($countryArr) {
                   if(count($countryArr)) {
                     $qry->whereIn('country_id', $countryArr);
                   }
