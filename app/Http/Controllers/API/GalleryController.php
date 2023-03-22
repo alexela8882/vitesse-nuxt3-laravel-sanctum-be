@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\API;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use App\Http\Controllers\API\BaseController as BaseController;
 
-use App\Models\Region;
 use App\Models\Album;
+use App\Models\Photo;
+use App\Models\Region;
 use App\Models\Gallery;
 use App\Models\GalleryAlbumMap as GAMap;
+use App\Models\GalleryPhotoMap as GPMap;
 
 use Spatie\Tags\Tag;
 
@@ -190,13 +193,40 @@ class GalleryController extends BaseController
                 }])
                 ->with('country')
                 ->with('tags')
-                ->paginate(5);
+                ->get()->values();
 
-      // insert method here
+      // get gallery photo ids from map based on main gallery
+      $gallery_photo_ids = GPMap::where('gallery_id', $gallery->id)->pluck('photo_id');
+
+      // get final gallery photo ids based on gallery from maps
+      $photo_ids = GPMap::whereIn('photo_id', $gallery_photo_ids)
+                    ->where(function($qry) use ($galleryArr) {
+                      if(count($galleryArr)) {
+                        $qry->whereIn('gallery_id', $galleryArr);
+                      }
+                    })
+                    ->pluck('photo_id');
+      $photos = Photo::whereIn('id', $photo_ids)
+                ->with(['gallerymaps' => function ($qry) {
+                  $qry->with('gallery');
+                }])
+                ->with('tags')
+                ->get()->values();
+
+      // append method
       $custom = collect(['method' => 'GET']);
-      $data = $custom->merge($albums);
 
-      return response()->json($data, 200);
+      $data = $albums->merge($photos);
+      $collection = (new Collection($data))->paginate(5);
+
+      // fix for data returning object on other pages
+      $items = $collection->items();
+      $decodeFix = json_decode($collection->toJson());
+      $decodeFix->data = array_values($items);
+
+      $decodeFix = $custom->merge($decodeFix);
+
+      return response()->json($decodeFix, 200);
     }
 
     public function filteredAlbums ($token, Request $request) {
@@ -251,13 +281,15 @@ class GalleryController extends BaseController
       $gallery_album_ids = GAMap::where('gallery_id', $gallery->id)->pluck('album_id');
 
       // get tagged album ids
-      $tagged_album_ids = Album::withAllTagsOfAnyType($tagArr)
-                          ->where(function($qry) use ($tagArr, $gallery_album_ids) {
-                            if(count($tagArr)) {
-                              $qry->whereIn('id', $gallery_album_ids);
-                            }
-                          })
-                          ->pluck('id');
+      if (count($tagArr)) {
+        $tagged_album_ids = Album::withAllTagsOfAnyType($tagArr)
+                            ->where(function($qry) use ($tagArr, $gallery_album_ids) {
+                              if(count($tagArr)) {
+                                $qry->whereIn('id', $gallery_album_ids);
+                              }
+                            })
+                            ->pluck('id');
+      } else $tagged_album_ids = $gallery_album_ids;
 
       // get final gallery album ids based on gallery from maps
       $album_ids = GAMap::whereIn('album_id', $tagged_album_ids)
@@ -299,12 +331,50 @@ class GalleryController extends BaseController
                 ->with('country')
                 ->with('tags')
                 ->orderBy('created_at', $request->filter['sort'])
-                ->paginate(5);
+                ->get();
 
-      // insert method here
+      // get gallery photo ids from map based on main gallery
+      $gallery_photo_ids = GPMap::where('gallery_id', $gallery->id)->pluck('photo_id');
+
+      // get tagged photo ids
+      if (count($tagArr)) {
+        $tagged_photo_ids = Photo::withAllTagsOfAnyType($tagArr)
+                          ->where(function($qry) use ($tagArr, $gallery_photo_ids) {
+                            if(count($tagArr)) {
+                              $qry->whereIn('id', $gallery_photo_ids);
+                            }
+                          })
+                          ->pluck('id');
+      } else $tagged_photo_ids = $gallery_photo_ids;
+
+      // get final gallery photo ids based on gallery from maps
+      $photo_ids = GPMap::whereIn('photo_id', $tagged_photo_ids)
+                    ->where(function($qry) use ($galleryArr) {
+                      if(count($galleryArr)) {
+                        $qry->whereIn('gallery_id', $galleryArr);
+                      }
+                    })
+                    ->pluck('photo_id');
+      $photos = Photo::whereIn('id', $photo_ids)
+                ->with(['gallerymaps' => function ($qry) {
+                  $qry->with('gallery');
+                }])
+                ->with('tags')
+                ->get();
+
+      // append method
       $custom = collect(['method' => 'POST']);
-      $data = $custom->merge($albums);
 
-      return response()->json($data, 200);
+      $data = $albums->merge($photos);
+      $collection = (new Collection($data))->paginate(5);
+
+      // fix for data returning object on other pages
+      $items = $collection->items();
+      $decodeFix = json_decode($collection->toJson());
+      $decodeFix->data = array_values($items);
+
+      $decodeFix = $custom->merge($decodeFix);
+
+      return response()->json($decodeFix, 200);
     }
 }
