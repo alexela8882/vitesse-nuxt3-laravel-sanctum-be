@@ -271,6 +271,7 @@ class GalleryController extends BaseController
       // get albums
       $albums = Album::whereIn('id', $album_ids)
                 ->where(function ($qry) use ($request, $dateFrom, $dateTo) {
+                  // date filter
                   if ($request->filter['year']) {
                     $qry->whereYear('event_date', $request->filter['year']);
                   } else if(count($request->filter['dates'])) {
@@ -280,6 +281,11 @@ class GalleryController extends BaseController
                     $dateTo = Carbon::parse($dateTo)->addDay()->format('Y-m-d');
 
                     $qry->whereBetween('event_date', [$dateFrom, $dateTo])->get();
+                  }
+
+                  // search filter
+                  if ($request->filter['search']) {
+                    $qry->where('title', 'like', '%'.$request->filter['search'].'%');
                   }
                 })
                 ->where(function ($qry) use ($countryArr) {
