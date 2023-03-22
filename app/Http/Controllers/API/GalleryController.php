@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 
+use App\Models\Region;
 use App\Models\Album;
 use App\Models\Gallery;
 use App\Models\GalleryAlbumMap as GAMap;
@@ -200,6 +201,7 @@ class GalleryController extends BaseController
 
     public function filteredAlbums ($token, Request $request) {
       $galleryArr = [];
+      $regionArr = [];
       $countryArr = [];
       $tagArr = [];
 
@@ -207,6 +209,20 @@ class GalleryController extends BaseController
       if ($request->filter['galleries']) {
         foreach ($request->filter['galleries'] as $fgallery) {
           array_push($galleryArr, $fgallery['id']);
+        }
+      }
+
+      // push filtered regions
+      if ($request->filter['regions']) {
+        foreach ($request->filter['regions'] as $fregion) {
+          array_push($regionArr, $fregion['id']);
+        }
+      }
+      // get region countries and push into $countryArr
+      $regions = Region::whereIn('id', $regionArr)->with('countries')->get();
+      foreach ($regions as $region) {
+        foreach ($region->countries as $country) {
+          array_push($countryArr, $country['id']);
         }
       }
 
@@ -276,6 +292,7 @@ class GalleryController extends BaseController
                 }])
                 ->with('country')
                 ->with('tags')
+                ->orderBy('created_at', $request->filter['sort'])
                 ->paginate(5);
 
       // insert method here
