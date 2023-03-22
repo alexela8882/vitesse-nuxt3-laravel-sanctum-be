@@ -12,6 +12,7 @@ use App\Models\GalleryAlbumMap as GAMap;
 use Spatie\Tags\Tag;
 
 use Validator;
+use Carbon\Carbon;
 
 class GalleryController extends BaseController
 {
@@ -223,14 +224,27 @@ class GalleryController extends BaseController
         }
       }
 
+      // date range filter
+      $dateFrom = $request->filter['date_range']['from'];
+      $dateTo = $request->filter['date_range']['to'] ? $request->filter['date_range']['to'] : $request->filter['date_range']['from'];
+
       // get main gallery
       $gallery = Gallery::where('_token', $token)->first();
 
       // get gallery album ids from map based on main gallery
       $gallery_album_ids = GAMap::where('gallery_id', $gallery->id)->pluck('album_id');
 
+      // get tagged album ids
+      $tagged_album_ids = Album::withAllTagsOfAnyType($tagArr)
+                          ->where(function($qry) use ($tagArr, $gallery_album_ids) {
+                            if(count($tagArr)) {
+                              $qry->whereIn('id', $gallery_album_ids);
+                            }
+                          })
+                          ->pluck('id');
+
       // get final gallery album ids based on gallery from maps
-      $album_ids = GAMap::whereIn('album_id', $gallery_album_ids)
+      $album_ids = GAMap::whereIn('album_id', $tagged_album_ids)
                     ->where(function($qry) use ($galleryArr) {
                       if(count($galleryArr)) {
                         $qry->whereIn('gallery_id', $galleryArr);
@@ -238,20 +252,18 @@ class GalleryController extends BaseController
                     })
                     ->pluck('album_id');
 
-      // get tagged album ids
-      $tagged_album_ids = Album::withAllTagsOfAnyType($tagArr)
-                          ->where(function($qry) use ($tagArr, $album_ids) {
-                            if(count($tagArr)) {
-                              $qry->whereIn('id', $album_ids);
-                            }
-                          })
-                          ->pluck('id');
-
       // get albums
-      $albums = Album::whereIn('id', $tagged_album_ids)
-                ->where(function ($qry) use ($request) {
-                  if(count($request->filter['dates'])) {
-                    $qry->whereIn(\DB::raw("DATE(event_date)"), $request->filter['dates']);
+      $albums = Album::whereIn('id', $album_ids)
+                ->where(function ($qry) use ($request, $dateFrom, $dateTo) {
+                  if ($request->filter['year']) {
+                    $qry->whereYear('event_date', $request->filter['year']);
+                  } else if(count($request->filter['dates'])) {
+                      $qry->whereIn(\DB::raw("DATE(event_date)"), $request->filter['dates']);
+                  } else if ($dateFrom) {
+                    $dateFrom = Carbon::parse($dateFrom)->format('Y-m-d');
+                    $dateTo = Carbon::parse($dateTo)->addDay()->format('Y-m-d');
+
+                    $qry->whereBetween('event_date', [$dateFrom, $dateTo])->get();
                   }
                 })
                 ->where(function ($qry) use ($countryArr) {
