@@ -10,6 +10,7 @@ use App\Models\Gallery;
 use App\Models\GalleryPhotoMap as GPMap;
 
 use Validator;
+use Carbon\Carbon;
 
 class PhotoController extends BaseController
 {
@@ -70,6 +71,8 @@ class PhotoController extends BaseController
       // update some details
       $photo->file_name = $request->file_name;
       $photo->description = $request->description;
+      $photo->country_id = $request->country_id ? $request->country_id : null;
+      $photo->event_date = $request->event_date ? Carbon::parse($request->event_date)->format('Y-m-d') : null;
       $photo->update();
 
       // delete current maps first

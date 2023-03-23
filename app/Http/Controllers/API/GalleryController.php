@@ -206,10 +206,22 @@ class GalleryController extends BaseController
                       }
                     })
                     ->pluck('photo_id');
-      $photos = Photo::whereIn('id', $photo_ids)
+      $photos = Photo::select('id',
+                              'user_id',
+                              'album_id',
+                              'file_name',
+                              'file_size',
+                              'file_type',
+                              'event_date',
+                              \DB::raw("DATE_FORMAT(event_date, '%M %d, %Y') as event_date2"),
+                              'country_id',
+                              '_token')
+                ->whereIn('id', $photo_ids)
                 ->with(['gallerymaps' => function ($qry) {
                   $qry->with('gallery');
                 }])
+                ->with('country')
+                ->with('album')
                 ->with('tags')
                 ->get()->values();
 
@@ -355,10 +367,22 @@ class GalleryController extends BaseController
                       }
                     })
                     ->pluck('photo_id');
-      $photos = Photo::whereIn('id', $photo_ids)
+      $photos = Photo::select('id',
+                              'user_id',
+                              'album_id',
+                              'file_name',
+                              'file_size',
+                              'file_type',
+                              'event_date',
+                              \DB::raw("DATE_FORMAT(event_date, '%M %d, %Y') as event_date2"),
+                              'country_id',
+                              '_token')
+                ->whereIn('id', $photo_ids)
                 ->with(['gallerymaps' => function ($qry) {
                   $qry->with('gallery');
                 }])
+                ->with('country')
+                ->with('album')
                 ->with('tags')
                 ->get();
 
