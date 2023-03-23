@@ -77,6 +77,7 @@ class PhotoController extends BaseController
 
       // delete current maps first
       GPMap::where('photo_id', $photo->id)->delete();
+
       // save galleries as tag
       if (count($request->galleries) > 0) {
         foreach ($request->galleries as $gallery) {
@@ -102,6 +103,28 @@ class PhotoController extends BaseController
       $response = [
         'data' => $_photo,
         'message' => 'Photo ' . $_photo->file_name . ' has been updated.'
+      ];
+
+      return response()->json($response, 200);
+    }
+
+    public function delete ($token) {
+      // get photo
+      $photo = Photo::where('_token', $token)->first();
+
+      // delete galleries
+      GPMap::where('photo_id', $photo->id)->delete();
+
+      // get photo
+      $_photo = $photo;
+
+      // delete photo
+      $photo->delete();
+
+      // return for FE use
+      $response = [
+        'data' => $_photo,
+        'message' => $_photo->file_name . ' has been successfully deleted.',
       ];
 
       return response()->json($response, 200);

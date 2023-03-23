@@ -252,4 +252,26 @@ class AlbumController extends BaseController
 
       return response()->json($photos, 200);
     }
+
+    public function delete ($token) {
+      // get album
+      $album = Album::where('_token', $token)->first();
+
+      // store album
+      $_album = $album;
+
+      // delete photos
+      Photo::where('album_id', $album->id)->delete();
+
+      // delete galleries
+      GAMap::where('album_id', $album->id)->delete();
+
+      // return for FE use
+      $response = [
+        'data' => $_album,
+        'message' => $_album . ' has been successfully deleted.'
+      ];
+
+      return response()->json($response, 200);
+    }
 }
