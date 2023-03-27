@@ -38,13 +38,11 @@ class TagController extends BaseController
       if($validator->fails()) return response()->json($validator->errors(), 422);
 
       // then store tag
-      // $tagWithType = Tag::findOrCreate($request->name, $request->type);
-      $tagWithType = new Tag;
-      $tagWithType->name = $request->name;
-      $tagWithType->type = $request->type;
-      $tagWithType->color = $request->color;
+      $tagWithType = Tag::findOrCreate($request->name, $request->type);
+      $tagWithType->color = !$request->type || ($request->color == '#000000' || $request->color == '#ffffff') ? null : $request->color;
+      $tagWithType->second_color = !$request->type || ($request->second_color == '#000000' || $request->second_color == '#ffffff') ? null : $request->second_color;
       $tagWithType->_token = generateRandomString();
-      $tagWithType->save();
+      $tagWithType->update();
 
       $response = [
         'data' => $tagWithType,
@@ -69,6 +67,7 @@ class TagController extends BaseController
       $tag->name = $request->name;
       $tag->type = $request->type;
       $tag->color = !$request->type || ($request->color == '#000000' || $request->color == '#ffffff') ? null : $request->color;
+      $tag->second_color = !$request->type || ($request->second_color == '#000000' || $request->second_color == '#ffffff') ? null : $request->second_color;
       $tag->update();
 
       $response = [
@@ -77,5 +76,23 @@ class TagController extends BaseController
       ];
 
       return response()->json($response, 200);
+    }
+
+    public function delete ($token) {
+      // fetch data
+      $tag = Tag::where('_token', $token)->first();
+  
+      $savedTag = $tag;
+  
+      // then delete tag
+      $tag->delete();
+  
+      // return data to FE
+      $response = [
+        'data' => $savedTag,
+        'message' => '"' . $savedTag->name . '" tag has been successfully deleted.'
+      ];
+  
+      return response()->json($response);
     }
 }

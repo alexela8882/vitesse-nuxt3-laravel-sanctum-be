@@ -142,6 +142,7 @@ Route::controller(TagController::class)->group(function () {
     Route::get('/without-type', 'withoutType');
     Route::put('/store', 'store');
     Route::post('/update/{token}', 'update');
+    Route::delete('/delete/{token}', 'delete');
   });
 });
 
