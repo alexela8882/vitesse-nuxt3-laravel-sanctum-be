@@ -266,6 +266,9 @@ class AlbumController extends BaseController
       // delete galleries
       GAMap::where('album_id', $album->id)->delete();
 
+      // delete album
+      $album->delete();
+
       // return for FE use
       $response = [
         'data' => $_album,
