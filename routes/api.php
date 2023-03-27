@@ -138,8 +138,10 @@ Route::controller(PhotoController::class)->group(function () {
 Route::controller(TagController::class)->group(function () {
   Route::group(['prefix' => '/tags', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all');
+    Route::get('/all-paginated', 'allp');
     Route::get('/without-type', 'withoutType');
     Route::put('/store', 'store');
+    Route::post('/update/{token}', 'update');
   });
 });
 
