@@ -55,8 +55,7 @@ class PhotoController extends BaseController
       $photo = Photo::where('_token', $token)->first();
 
       $rules = [
-        'file_name' => 'required|unique:photos,file_name,'.$photo->id,
-        'description' => 'required'
+        'file_name' => 'required|unique:photos,file_name,'.$photo->id
       ];
   
       $message = [
@@ -70,7 +69,7 @@ class PhotoController extends BaseController
 
       // update some details
       $photo->file_name = $request->file_name;
-      $photo->description = $request->description;
+      if ($request->description !== '') $photo->description = $request->description;
       $photo->country_id = $request->country_id ? $request->country_id : null;
       $photo->event_date = $request->event_date ? Carbon::parse($request->event_date)->format('Y-m-d') : null;
       $photo->update();

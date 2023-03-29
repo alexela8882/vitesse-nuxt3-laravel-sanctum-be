@@ -197,6 +197,7 @@ class GalleryController extends BaseController
                 }])
                 ->with('country')
                 ->with('tags')
+                ->with('photos')
                 ->get()->values();
 
       // get gallery photo ids from map based on main gallery
@@ -216,6 +217,7 @@ class GalleryController extends BaseController
                               'file_name',
                               'file_size',
                               'file_type',
+                              'file_extension',
                               'event_date',
                               \DB::raw("DATE_FORMAT(event_date, '%M %d, %Y') as event_date2"),
                               'country_id',
@@ -347,6 +349,7 @@ class GalleryController extends BaseController
                 }])
                 ->with('country')
                 ->with('tags')
+                ->with('photos')
                 ->get();
 
       // get gallery photo ids from map based on main gallery
@@ -377,6 +380,7 @@ class GalleryController extends BaseController
                               'file_name',
                               'file_size',
                               'file_type',
+                              'file_extension',
                               'event_date',
                               \DB::raw("DATE_FORMAT(event_date, '%M %d, %Y') as event_date2"),
                               'country_id',

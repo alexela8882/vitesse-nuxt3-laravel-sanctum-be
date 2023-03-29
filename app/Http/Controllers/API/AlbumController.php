@@ -224,8 +224,7 @@ class AlbumController extends BaseController
       $album = Album::where('_token', $token)->first();
 
       $rules = [
-        'image' => 'required',
-        'description' => 'required'
+        'image' => 'required'
       ];
   
       $message = [
