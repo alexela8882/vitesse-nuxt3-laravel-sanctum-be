@@ -54,13 +54,18 @@ class AlbumController extends BaseController
     }
 
     public function store ($token, Request $request) {
+      $req_photo = json_decode($request->photo);
+      $req_subgalleries = json_decode($request->subgalleries);
+      $req_subgallerytags = json_decode($request->subgallerytags);
+      $req_tags = json_decode($request->tags);
+
       $rules = [
         'title' => 'required|unique:albums,title',
         'country_id' => 'required',
         'venue' => 'required',
         'event_date' => 'required',
         'description' => 'required',
-        'img_path' => 'required',
+        'img_path' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
       ];
   
       $message = [
@@ -95,9 +100,10 @@ class AlbumController extends BaseController
       $photo = new Photo;
       $photo->user_id = $user->id;
       $photo->album_id = $album->id;
-      $photo->file_name = $request->photo['file_name'];
-      $photo->file_size = $request->photo['file_size'];
-      $photo->file_type = $request->photo['file_type'];
+      $photo->file_name = $req_photo->file_name;
+      $photo->file_size = $req_photo->file_size;
+      $photo->file_type = $req_photo->file_type;
+      $photo->file_extension = $request->img_path->getClientOriginalExtension();
       $photo->description = $request->description;
       $photo->_token = generateRandomString();
       $photo->save();
@@ -109,10 +115,10 @@ class AlbumController extends BaseController
       $gamap->save();
 
       // save sub-galleries as tag
-      if (count($request->subgalleries) > 0) {
-        foreach ($request->subgalleries as $subgallery) {
+      if (count($req_subgalleries) > 0) {
+        foreach ($req_subgalleries as $subgallery) {
           $gamap = new GAMap;
-          $gamap->gallery_id = $subgallery['id'];
+          $gamap->gallery_id = $subgallery->id;
           $gamap->album_id = $album->id;
           $gamap->save();
         }
@@ -120,11 +126,16 @@ class AlbumController extends BaseController
 
       // collect all tags from main-gallery tag and sub-gallery tags
       $allTags = [];
-      foreach ($request->tags as $tag) array_push($allTags, $tag);
-      foreach ($request->subgallerytags as $subtag) array_push($allTags, $subtag);
+      foreach ($req_tags as $tag) array_push($allTags, $tag);
+      foreach ($req_subgallerytags as $subtag) array_push($allTags, $subtag);
 
       // sync tags
-      foreach ($allTags as $allTag) $album->attachTag($allTag['name']['en'], $allTag['type']);
+      foreach ($allTags as $allTag) $album->attachTag($allTag->name->en, $allTag->type);
+
+      // upload image
+      $file_location = 'images/'.$album->_token;
+      $image = $photo->_token . '.' . $photo->file_extension;
+      $request->img_path->move(public_path($file_location), $image);
 
       $album->tags;
 
@@ -137,6 +148,11 @@ class AlbumController extends BaseController
     }
 
     public function update ($token, Request $request) {
+      $req_photo = json_decode($request->photo);
+      $req_subgalleries = json_decode($request->subgalleries);
+      $req_subgallerytags = json_decode($request->subgallerytags);
+      $req_tags = json_decode($request->tags);
+
       $rules = [
         'title' => 'required|unique:albums,title,'.$request->id,
         'country_id' => 'required',
@@ -175,10 +191,10 @@ class AlbumController extends BaseController
       // delete current maps first
       GAMap::where('album_id', $album->id)->delete();
       // save galleries as tag
-      if (count($request->subgalleries) > 0) {
-        foreach ($request->subgalleries as $subgallery) {
+      if (count($req_subgalleries) > 0) {
+        foreach ($req_subgalleries as $subgallery) {
           $gamap = new GAMap;
-          $gamap->gallery_id = $subgallery['id'];
+          $gamap->gallery_id = $subgallery->id;
           $gamap->album_id = $album->id;
           $gamap->save();
         }
@@ -186,12 +202,12 @@ class AlbumController extends BaseController
 
       // collect all tags from album tags and gallery tags
       $allTags = [];
-      foreach ($request->tags as $tag) array_push($allTags, $tag);
-      foreach ($request->subgallerytags as $subtag) array_push($allTags, $subtag);
+      foreach ($req_tags as $tag) array_push($allTags, $tag);
+      foreach ($req_subgallerytags as $subtag) array_push($allTags, $subtag);
 
       // sync tags
       $album->syncTags([]); // reset first
-      foreach ($allTags as $allTag) $album->attachTag($allTag['name']['en'], $allTag['type']);
+      foreach ($allTags as $allTag) $album->attachTag($allTag->name->en, $allTag->type);
 
       $_album = $this->_get($album->_token);
 
@@ -226,12 +242,18 @@ class AlbumController extends BaseController
       $photo = new Photo;
       $photo->user_id = $user->id;
       $photo->album_id = $album->id;
-      $photo->file_name = $request->image;
-      $photo->file_size = 10;
-      $photo->file_type = 'img/png';
+      $photo->file_name = $request->file('_img')->getClientOriginalName();
+      $photo->file_size = $request->file('_img')->getSize();
+      $photo->file_type = $request->file('_img')->getClientMimeType();
+      $photo->file_extension = $request->_img->getClientOriginalExtension();
       $photo->description = $request->description;
       $photo->_token = generateRandomString();
       $photo->save();
+
+      // upload image
+      $file_location = 'images/'.$album->_token;
+      $image = $photo->_token . '.' . $photo->file_extension;
+      $request->_img->move(public_path($file_location), $image);
 
       $photo->album = $album;
 
@@ -272,7 +294,7 @@ class AlbumController extends BaseController
       // return for FE use
       $response = [
         'data' => $_album,
-        'message' => $_album . ' has been successfully deleted.'
+        'message' => $_album->title . ' has been successfully deleted.'
       ];
 
       return response()->json($response, 200);

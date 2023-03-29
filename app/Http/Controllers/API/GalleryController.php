@@ -233,7 +233,7 @@ class GalleryController extends BaseController
       $custom = collect(['method' => 'GET']);
 
       $data = $albums->merge($photos);
-      $collection = (new Collection($data))->paginate(5);
+      $collection = (new Collection($data))->sortByDesc('id')->paginate(5);
 
       // fix for data returning object on other pages
       $items = $collection->items();
@@ -333,7 +333,8 @@ class GalleryController extends BaseController
 
                   // search filter
                   if ($request->filter['search']) {
-                    $qry->where('title', 'like', '%'.$request->filter['search'].'%');
+                    $qry->where('venue', 'like', '%'.$request->filter['search'].'%')
+                        ->orWhere('title', 'like', '%'.$request->filter['search'].'%');
                   }
                 })
                 ->where(function ($qry) use ($countryArr) {
@@ -346,7 +347,6 @@ class GalleryController extends BaseController
                 }])
                 ->with('country')
                 ->with('tags')
-                ->orderBy('created_at', $request->filter['sort'])
                 ->get();
 
       // get gallery photo ids from map based on main gallery
@@ -385,6 +385,29 @@ class GalleryController extends BaseController
                 ->with(['gallerymaps' => function ($qry) {
                   $qry->with('gallery');
                 }])
+                ->where(function ($qry) use ($request, $dateFrom, $dateTo) {
+                  // date filter
+                  if ($request->filter['year']) {
+                    $qry->whereYear('event_date', $request->filter['year']);
+                  } else if(count($request->filter['dates'])) {
+                      $qry->whereIn(\DB::raw("DATE(event_date)"), $request->filter['dates']);
+                  } else if ($dateFrom) {
+                    $dateFrom = Carbon::parse($dateFrom)->format('Y-m-d');
+                    $dateTo = Carbon::parse($dateTo)->addDay()->format('Y-m-d');
+
+                    $qry->whereBetween('event_date', [$dateFrom, $dateTo])->get();
+                  }
+
+                  // search filter
+                  if ($request->filter['search']) {
+                    $qry->where('file_name', 'like', '%'.$request->filter['search'].'%');
+                  }
+                })
+                ->where(function ($qry) use ($countryArr) {
+                  if(count($countryArr)) {
+                    $qry->whereIn('country_id', $countryArr);
+                  }
+                })
                 ->with('country')
                 ->with('album')
                 ->with('tags')
@@ -394,7 +417,9 @@ class GalleryController extends BaseController
       $custom = collect(['method' => 'POST']);
 
       $data = $albums->merge($photos);
-      $collection = (new Collection($data))->paginate(5);
+
+      if ($request->filter['sort'] == 'asc') $collection = (new Collection($data))->sortByDesc('id')->paginate(5);
+      else $collection = (new Collection($data))->sortBy('id')->paginate(5);
 
       // fix for data returning object on other pages
       $items = $collection->items();

@@ -119,10 +119,10 @@ Route::controller(GalleryController::class)->group(function () {
 Route::controller(AlbumController::class)->group(function () {
   Route::group(['prefix' => '/albums', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/get/{token}', 'get');
-    Route::put('/store/{token}', 'store');
+    Route::post('/store/{token}', 'store');
     Route::post('/update/{token}', 'update');
     Route::delete('/delete/{token}', 'delete');
-    Route::put('/add-photo/{token}', 'addPhoto');
+    Route::post('/add-photo/{token}', 'addPhoto');
     Route::get('/paginated-photos/{token}', 'pphotos');
   });
 });
