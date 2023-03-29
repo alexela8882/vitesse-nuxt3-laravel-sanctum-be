@@ -76,6 +76,8 @@ class AlbumController extends BaseController
         'event_date.required' => 'This field is required.',
         'description.required' => 'This field is required.',
         'img_path.required' => 'Please upload image.',
+        'img_path.max' => 'Please upload image with maximum size of 2048.',
+        'img_path.mimes' => 'Image with jpeg, png, jpg, gif & svg file type is only allowed.',
       ];
 
       $validator = Validator::make($request->all(), $rules, $message);
@@ -224,12 +226,13 @@ class AlbumController extends BaseController
       $album = Album::where('_token', $token)->first();
 
       $rules = [
-        'image' => 'required'
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
       ];
   
       $message = [
         'image.required' => 'Please upload an image.',
-        'description.required' => 'This field is required.',
+        'image.max' => 'Please upload image with maximum size of 2048.',
+        'image.mimes' => 'Image with jpeg, png, jpg, gif & svg file type is only allowed.'
       ];
       $validator = Validator::make($request->all(), $rules, $message);
   
@@ -241,10 +244,10 @@ class AlbumController extends BaseController
       $photo = new Photo;
       $photo->user_id = $user->id;
       $photo->album_id = $album->id;
-      $photo->file_name = $request->file('_img')->getClientOriginalName();
-      $photo->file_size = $request->file('_img')->getSize();
-      $photo->file_type = $request->file('_img')->getClientMimeType();
-      $photo->file_extension = $request->_img->getClientOriginalExtension();
+      $photo->file_name = $request->file('image')->getClientOriginalName();
+      $photo->file_size = $request->file('image')->getSize();
+      $photo->file_type = $request->file('image')->getClientMimeType();
+      $photo->file_extension = $request->image->getClientOriginalExtension();
       $photo->description = $request->description;
       $photo->_token = generateRandomString();
       $photo->save();
@@ -252,7 +255,7 @@ class AlbumController extends BaseController
       // upload image
       $file_location = 'images/'.$album->_token;
       $image = $photo->_token . '.' . $photo->file_extension;
-      $request->_img->move(public_path($file_location), $image);
+      $request->image->move(public_path($file_location), $image);
 
       $photo->album = $album;
 

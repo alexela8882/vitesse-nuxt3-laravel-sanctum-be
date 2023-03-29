@@ -27,7 +27,7 @@ class GalleryController extends BaseController
     }
 
     public function all () {
-      $galleries = Gallery::where('parent_id', null)->paginate(5);
+      $galleries = Gallery::paginate(5);
 
       return $galleries;
     }

@@ -60,8 +60,7 @@ class PhotoController extends BaseController
   
       $message = [
         'file_name.required' => 'This field is required.',
-        'file_name.unique' => 'The name is already taken. Please choose another.',
-        'description.required' => 'This field is required.',
+        'file_name.unique' => 'The name is already taken. Please choose another.'
       ];
       $validator = Validator::make($request->all(), $rules, $message);
   
