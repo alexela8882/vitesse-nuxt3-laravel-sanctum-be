@@ -38,6 +38,13 @@ class AppServiceProvider extends ServiceProvider
             ]
           );
         });
+
+        Collection::macro('sortByDate', function (string $column = 'created_at', bool $descending = true) {
+          /* @var $this Collection */
+          return $this->sortBy(function ($datum) use ($column) {
+            return strtotime(((object)$datum)->$column);
+          }, SORT_REGULAR, $descending);
+        });
     }
 
     /**

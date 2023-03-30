@@ -65,7 +65,7 @@ class AlbumController extends BaseController
         'venue' => 'required',
         'event_date' => 'required',
         'description' => 'required',
-        'img_path' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        'img_path' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:4086',
       ];
   
       $message = [
@@ -76,7 +76,7 @@ class AlbumController extends BaseController
         'event_date.required' => 'This field is required.',
         'description.required' => 'This field is required.',
         'img_path.required' => 'Please upload image.',
-        'img_path.max' => 'Please upload image with maximum size of 2048.',
+        'img_path.max' => 'Please upload image with maximum size of 4086.',
         'img_path.mimes' => 'Image with jpeg, png, jpg, gif & svg file type is only allowed.',
       ];
 

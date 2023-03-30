@@ -221,7 +221,9 @@ class GalleryController extends BaseController
                               'event_date',
                               \DB::raw("DATE_FORMAT(event_date, '%M %d, %Y') as event_date2"),
                               'country_id',
-                              '_token')
+                              '_token',
+                              'created_at',
+                              'updated_at')
                 ->whereIn('id', $photo_ids)
                 ->with(['gallerymaps' => function ($qry) {
                   $qry->with('gallery');
@@ -235,7 +237,7 @@ class GalleryController extends BaseController
       $custom = collect(['method' => 'GET']);
 
       $data = $albums->merge($photos);
-      $collection = (new Collection($data))->sortByDesc('id')->paginate(5);
+      $collection = (new Collection($data))->sortByDate('created_at', true)->paginate(5);
 
       // fix for data returning object on other pages
       $items = $collection->items();
@@ -384,7 +386,9 @@ class GalleryController extends BaseController
                               'event_date',
                               \DB::raw("DATE_FORMAT(event_date, '%M %d, %Y') as event_date2"),
                               'country_id',
-                              '_token')
+                              '_token',
+                              'created_at',
+                              'updated_at')
                 ->whereIn('id', $photo_ids)
                 ->with(['gallerymaps' => function ($qry) {
                   $qry->with('gallery');
@@ -422,8 +426,8 @@ class GalleryController extends BaseController
 
       $data = $albums->merge($photos);
 
-      if ($request->filter['sort'] == 'asc') $collection = (new Collection($data))->sortByDesc('id')->paginate(5);
-      else $collection = (new Collection($data))->sortBy('id')->paginate(5);
+      if ($request->filter['sort'] == 'asc') $collection = (new Collection($data))->sortByDate('created_at', fase)->paginate(5);
+      else $collection = (new Collection($data))->sortByDate('created_at', true)->paginate(5);
 
       // fix for data returning object on other pages
       $items = $collection->items();
