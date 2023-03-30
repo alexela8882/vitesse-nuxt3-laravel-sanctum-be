@@ -426,8 +426,8 @@ class GalleryController extends BaseController
 
       $data = $albums->merge($photos);
 
-      if ($request->filter['sort'] == 'asc') $collection = (new Collection($data))->sortByDate('created_at', fase)->paginate(5);
-      else $collection = (new Collection($data))->sortByDate('created_at', true)->paginate(5);
+      if ($request->filter['sort'] == 'asc') $collection = (new Collection($data))->sortByDate('created_at', true)->paginate(5);
+      else $collection = (new Collection($data))->sortByDate('created_at', false)->paginate(5);
 
       // fix for data returning object on other pages
       $items = $collection->items();
