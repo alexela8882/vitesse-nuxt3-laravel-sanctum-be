@@ -42,8 +42,8 @@ class UserController extends BaseController
   }
 
   public function authUser (Request $request) {
-    $user = auth('sanctum')->user();
-    $user->roles;
+    $user = \Auth::user();
+    //$user->roles;
 
     return response()->json($user, 200);
   }
