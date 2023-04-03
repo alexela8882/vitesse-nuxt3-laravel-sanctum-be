@@ -10,6 +10,7 @@ use App\Models\Album;
 use App\Models\Gallery;
 use App\Models\GalleryAlbumMap as GAMap;
 use Spatie\Tags\Tag;
+use Intervention\Image\ImageManagerStatic as Image;
 
 use Carbon\Carbon;
 use Validator;
@@ -98,7 +99,7 @@ class AlbumController extends BaseController
       $album->_token = generateRandomString();
       $album->save();
 
-      // add photos
+      // add photo
       $photo = new Photo;
       $photo->user_id = $user->id;
       $photo->album_id = $album->id;
@@ -109,6 +110,14 @@ class AlbumController extends BaseController
       $photo->description = $request->description;
       $photo->_token = generateRandomString();
       $photo->save();
+
+      // upload image
+      $file_location = 'images/'.$album->_token;
+      $image = $photo->_token . '.' . $photo->file_extension;
+      $request->img_path->move(public_path($file_location), $image);
+
+      // generate thumbnail
+      generateThumbnail($album, $photo);
 
       // save main gallery as tag
       $gamap = new GAMap;
@@ -133,11 +142,6 @@ class AlbumController extends BaseController
 
       // sync tags
       foreach ($allTags as $allTag) $album->attachTag($allTag->name->en, $allTag->type);
-
-      // upload image
-      $file_location = 'images/'.$album->_token;
-      $image = $photo->_token . '.' . $photo->file_extension;
-      $request->img_path->move(public_path($file_location), $image);
 
       $album->tags;
 
@@ -257,7 +261,11 @@ class AlbumController extends BaseController
       $image = $photo->_token . '.' . $photo->file_extension;
       $request->image->move(public_path($file_location), $image);
 
+      // include album in collection
       $photo->album = $album;
+
+      // generate thumbnail
+      generateThumbnail($album, $photo);
 
       $response = [
         'data' => $photo,

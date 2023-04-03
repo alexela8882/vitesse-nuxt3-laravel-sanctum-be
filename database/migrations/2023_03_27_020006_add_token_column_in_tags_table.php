@@ -14,7 +14,7 @@ class AddTokenColumnInTagsTable extends Migration
     public function up()
     {
         Schema::table('tags', function (Blueprint $table) {
-          $table->string('_token');
+          $table->string('_token')->nullable();
         });
     }
 
