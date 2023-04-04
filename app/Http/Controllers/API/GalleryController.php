@@ -27,7 +27,7 @@ class GalleryController extends BaseController
     }
 
     public function all () {
-      $galleries = Gallery::paginate(5);
+      $galleries = Gallery::paginate(10);
 
       return $galleries;
     }
@@ -233,8 +233,8 @@ class GalleryController extends BaseController
                 ->with('tags')
                 ->get()->values();
 
-      // append method
-      $custom = collect(['method' => 'GET']);
+      // append method, albums & photos count
+      $custom = collect(['method' => 'GET', 'album_count' => $albums->count(), 'photo_count' => $photos->count()]);
 
       $data = $albums->merge($photos);
       $collection = (new Collection($data))->sortByDate('created_at', true)->paginate(5);
@@ -421,8 +421,8 @@ class GalleryController extends BaseController
                 ->with('tags')
                 ->get();
 
-      // append method
-      $custom = collect(['method' => 'POST']);
+      // append method, albums & photos count
+      $custom = collect(['method' => 'POST', 'album_count' => $albums->count(), 'photo_count' => $photos->count()]);
 
       $data = $albums->merge($photos);
 
