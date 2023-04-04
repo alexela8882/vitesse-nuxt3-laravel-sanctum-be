@@ -10,7 +10,7 @@ use App\Models\Country;
 class CountryController extends BaseController
 {
     public function all () {
-      $countries = Country::all();
+      $countries = Country::orderBy('name', 'asc')->get();
     
       return response()->json($countries);
     }
