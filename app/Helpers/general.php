@@ -1,6 +1,7 @@
 <?php
 
 use Intervention\Image\ImageManagerStatic as Image;
+use Illuminate\Support\Facades\File;
 
 if (! function_exists('generateRandomString')) {
   function generateRandomString($length = 30) {
@@ -31,5 +32,22 @@ if (! function_exists('generateThumbnail')) {
     // finally we save the image as a new file
     $savePath = 'images/'.$album->_token.'/thumbnails/'.$photo->_token.'-thumbnail.'.$photo->file_extension;
     $img->save($savePath);
+
+    // destroy resource
+    $img->destroy();
+  }
+}
+
+if (! function_exists('destroyPhoto')) {
+  function destroyPhoto($album, $photo) {
+    // get path
+    $folderPath = 'images/'.$album->_token;
+    $imgPath = 'images/'.$album->_token.'/'.$photo->_token.'.'.$photo->file_extension;
+    $imgPathThumbnail = 'images/'.$album->_token.'/thumbnails/'.$photo->_token.'-thumbnail.'.$photo->file_extension;
+
+    // delete folder and images
+    if (file_exists($folderPath)) File::deleteDirectory(public_path($folderPath));
+    if (file_exists($imgPath)) File::delete($imgPath);
+    if (file_exists($imgPathThumbnail)) File::delete($imgPathThumbnail);
   }
 }
