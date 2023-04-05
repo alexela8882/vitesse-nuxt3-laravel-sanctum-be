@@ -133,6 +133,7 @@ Route::controller(PhotoController::class)->group(function () {
     Route::get('/get/{token}', 'get');
     Route::post('/update/{token}', 'update');
     Route::delete('/delete/{token}', 'delete');
+    Route::get('/download/{token}', 'download');
   });
 });
 

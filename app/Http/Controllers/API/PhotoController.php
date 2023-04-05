@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
 use Intervention\Image\ImageManagerStatic as Image;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\Photo;
 use App\Models\Gallery;
@@ -130,5 +131,13 @@ class PhotoController extends BaseController
       ];
 
       return response()->json($response, 200);
+    }
+
+    public function download ($token) {
+      //get photo
+      $photo = Photo::where('_token', $token)->with('album')->first();
+
+      $file = $photo->album->_token.'/'.$photo->_token.'.'.$photo->file_extension;
+      return Storage::disk('images')->download($file);
     }
 }
