@@ -38,16 +38,50 @@ if (! function_exists('generateThumbnail')) {
   }
 }
 
-if (! function_exists('destroyPhoto')) {
-  function destroyPhoto($album, $photo) {
-    // get path
+if (! function_exists('destroyAlbum')) {
+  function destroyAlbum($album, $photos) {
+    // loop though photos
+    // foreach ($photos as $photo) {
+    //   // get photo path
+    //   $imgPath = 'images/'.$album->_token.'/'.$photo->_token.'.'.$photo->file_extension;
+    //   $imgPathThumbnail = 'images/'.$album->_token.'/thumbnails/'.$photo->_token.'-thumbnail.'.$photo->file_extension;
+
+    //   // delete photos
+    //   if (file_exists($imgPath)) File::delete($imgPath);
+    //   if (file_exists($imgPathThumbnail)) File::delete($imgPathThumbnail);
+    // }
+
+    // get folder path
     $folderPath = 'images/'.$album->_token;
-    $imgPath = 'images/'.$album->_token.'/'.$photo->_token.'.'.$photo->file_extension;
-    $imgPathThumbnail = 'images/'.$album->_token.'/thumbnails/'.$photo->_token.'-thumbnail.'.$photo->file_extension;
 
     // delete folder and images
     if (file_exists($folderPath)) File::deleteDirectory(public_path($folderPath));
+  }
+}
+
+if (! function_exists('destroyPhoto')) {
+  function destroyPhoto($album, $photo) {
+    // get path
+    $imgPath = 'images/'.$album->_token.'/'.$photo->_token.'.'.$photo->file_extension;
+    $imgPathThumbnail = 'images/'.$album->_token.'/thumbnails/'.$photo->_token.'-thumbnail.'.$photo->file_extension;
+
+    // delete images
     if (file_exists($imgPath)) File::delete($imgPath);
     if (file_exists($imgPathThumbnail)) File::delete($imgPathThumbnail);
+  }
+}
+
+if (! function_exists('emptyAlbum')) {
+  function emptyAlbum($album, $photos) {
+    // loop though photos
+    foreach ($photos as $photo) {
+      // get photo path
+      $imgPath = 'images/'.$album->_token.'/'.$photo->_token.'.'.$photo->file_extension;
+      $imgPathThumbnail = 'images/'.$album->_token.'/thumbnails/'.$photo->_token.'-thumbnail.'.$photo->file_extension;
+
+      // delete photos
+      if (file_exists($imgPath)) File::delete($imgPath);
+      if (file_exists($imgPathThumbnail)) File::delete($imgPathThumbnail);
+    }
   }
 }
