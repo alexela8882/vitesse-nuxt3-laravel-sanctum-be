@@ -2,7 +2,6 @@
 
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 
 if (! function_exists('generateRandomString')) {
   function generateRandomString($length = 30) {
