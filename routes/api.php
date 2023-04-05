@@ -124,6 +124,7 @@ Route::controller(AlbumController::class)->group(function () {
     Route::delete('/delete/{token}', 'delete');
     Route::post('/add-photo/{token}', 'addPhoto');
     Route::get('/paginated-photos/{token}', 'pphotos');
+    Route::post('/empty/{token}', 'empty');
   });
 });
 

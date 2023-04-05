@@ -301,10 +301,35 @@ class AlbumController extends BaseController
       // delete album
       $album->delete();
 
+      // destroy album together with the photos
+      destroyAlbum($album);
+
       // return for FE use
       $response = [
         'data' => $_album,
         'message' => $_album->title . ' has been successfully deleted.'
+      ];
+
+      return response()->json($response, 200);
+    }
+
+    public function empty ($token) {
+      // get album
+      $album = Album::where('_token', $token)->with('photos')->first();
+
+      // store album
+      $_album = $album;
+
+      // delete photos
+      Photo::where('album_id', $album->id)->delete();
+
+      // destroy all photos from this album
+      emptyAlbum($album, $album->photos);
+
+      // return for FE use
+      $response = [
+        'data' => $_album,
+        'message' => $_album->title . ' has been successfully emptied.'
       ];
 
       return response()->json($response, 200);

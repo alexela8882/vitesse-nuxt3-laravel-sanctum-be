@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\API\BaseController as BaseController;
+use Intervention\Image\ImageManagerStatic as Image;
 
 use App\Models\Photo;
 use App\Models\Gallery;
@@ -108,7 +109,7 @@ class PhotoController extends BaseController
 
     public function delete ($token) {
       // get photo
-      $photo = Photo::where('_token', $token)->first();
+      $photo = Photo::where('_token', $token)->with('album')->first();
 
       // delete galleries
       GPMap::where('photo_id', $photo->id)->delete();
@@ -118,6 +119,9 @@ class PhotoController extends BaseController
 
       // delete photo
       $photo->delete();
+
+      // destroy photo
+      destroyPhoto($photo->album, $photo);
 
       // return for FE use
       $response = [
