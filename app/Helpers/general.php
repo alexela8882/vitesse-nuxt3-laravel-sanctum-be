@@ -2,6 +2,7 @@
 
 use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 if (! function_exists('generateRandomString')) {
   function generateRandomString($length = 30) {
@@ -19,7 +20,7 @@ if (! function_exists('generateThumbnail')) {
   function generateThumbnail($album, $photo) {
     // create thumbnail path inside album directory
     $thumnailPath = public_path('images/'.$album->_token.'/thumbnails/');
-    if(!\File::isDirectory($thumnailPath)) \File::makeDirectory($thumnailPath, 0777, true, true);
+    if(!\File::isDirectory($thumnailPath)) \File::makeDirectory($thumnailPath, 0711, true, true);
 
     // open image file to resize for thumbnail
     $img = Image::make('images/'.$album->_token.'/'.$photo->_token.'.'.$photo->file_extension);
@@ -39,18 +40,7 @@ if (! function_exists('generateThumbnail')) {
 }
 
 if (! function_exists('destroyAlbum')) {
-  function destroyAlbum($album, $photos) {
-    // loop though photos
-    // foreach ($photos as $photo) {
-    //   // get photo path
-    //   $imgPath = 'images/'.$album->_token.'/'.$photo->_token.'.'.$photo->file_extension;
-    //   $imgPathThumbnail = 'images/'.$album->_token.'/thumbnails/'.$photo->_token.'-thumbnail.'.$photo->file_extension;
-
-    //   // delete photos
-    //   if (file_exists($imgPath)) File::delete($imgPath);
-    //   if (file_exists($imgPathThumbnail)) File::delete($imgPathThumbnail);
-    // }
-
+  function destroyAlbum($album) {
     // get folder path
     $folderPath = 'images/'.$album->_token;
 
