@@ -9,11 +9,15 @@ use App\Models\Photo;
 use App\Models\Album;
 use App\Models\Gallery;
 use App\Models\GalleryAlbumMap as GAMap;
+
 use Spatie\Tags\Tag;
 use Intervention\Image\ImageManagerStatic as Image;
+use Illuminate\Support\Facades\Storage;
 
 use Carbon\Carbon;
 use Validator;
+use File;
+use ZipArchive;
 
 class AlbumController extends BaseController
 {
@@ -333,5 +337,30 @@ class AlbumController extends BaseController
       ];
 
       return response()->json($response, 200);
+    }
+
+    public function downloadAlbum ($token) {
+      // // get album
+      $album = Album::where('_token', $token)->first();
+
+      $zip = new ZipArchive();
+      $zipFileName = $album['title'] . '.zip';
+      $dir = public_path($zipFileName);
+
+      if ($zip->open(public_path($zipFileName), ZipArchive::CREATE) == TRUE) {
+        $files = File::files(public_path('images/' . $token));
+        foreach ($files as $key => $value) {
+          $relativeName = basename($value);
+          $zip->addFile($value, $relativeName);
+        }
+        $zip->close();
+      }
+
+      $headers = array(
+        'Content-Type' => 'application/octet-stream',
+      );
+
+      if(file_exists($dir)) return response()->download($dir, $zipFileName, $headers)->deleteFileAfterSend(true);
+      else return response()->json('File not found.', 404);
     }
 }

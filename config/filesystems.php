@@ -42,6 +42,13 @@ return [
             'visibility' => 'public',
         ],
 
+        'root' => [
+            'driver' => 'local',
+            'root' => public_path(),
+            'url' => env('APP_URL'),
+            'visibility' => 'public',
+        ],
+
         'images' => [
             'driver' => 'local',
             'root' => public_path('images'),

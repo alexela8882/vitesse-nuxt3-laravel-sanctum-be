@@ -125,6 +125,7 @@ Route::controller(AlbumController::class)->group(function () {
     Route::post('/add-photo/{token}', 'addPhoto');
     Route::get('/paginated-photos/{token}', 'pphotos');
     Route::post('/empty/{token}', 'empty');
+    Route::get('/download-album/{token}', 'downloadAlbum');
   });
 });
 
