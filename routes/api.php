@@ -51,6 +51,7 @@ Route::controller(UserController::class)->group(function () {
     Route::get('/get/{token}', 'get')->middleware(['nd_permission:view user']);
     Route::put('/store', 'store')->middleware(['nd_permission:add user']);
     Route::post('/update/{token}', 'update')->middleware(['nd_permission:edit user']);
+    Route::post('/update-access/{token}', 'updateAccess');
     Route::delete('/delete/{token}', 'delete')->middleware(['nd_permission:delete user']);
   });
 });
