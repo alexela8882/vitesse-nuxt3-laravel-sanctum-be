@@ -95,7 +95,7 @@ class AlbumController extends BaseController
       $album = new Album;
       $album->user_id = $user->id;
       $album->title = $request->title;
-      $album->description = $request->description;
+      $album->description = ($request->description && $request->description !== "null") ? $request->description : null;
       $album->country_id = $request->country_id;
       $album->venue = $request->venue;
       $album->event_date = Carbon::parse($request->event_date)->format('Y-m-d h:i:s');
@@ -111,7 +111,7 @@ class AlbumController extends BaseController
       $photo->file_size = $req_photo->file_size;
       $photo->file_type = $req_photo->file_type;
       $photo->file_extension = $request->img_path->getClientOriginalExtension();
-      $photo->description = $request->description;
+      $photo->description = ($request->description && $request->description !== "null") ? $request->description : null;
       $photo->_token = generateRandomString();
       $photo->save();
 
@@ -126,6 +126,12 @@ class AlbumController extends BaseController
       // save main gallery as tag
       $gamap = new GAMap;
       $gamap->gallery_id = $gallery->id;
+      $gamap->album_id = $album->id;
+      $gamap->save();
+
+      // also save parent gallery as tag
+      $gamap = new GAMap;
+      $gamap->gallery_id = $gallery->parent_id;
       $gamap->album_id = $album->id;
       $gamap->save();
 
@@ -256,7 +262,7 @@ class AlbumController extends BaseController
       $photo->file_size = $request->file('image')->getSize();
       $photo->file_type = $request->file('image')->getClientMimeType();
       $photo->file_extension = $request->image->getClientOriginalExtension();
-      $photo->description = $request->description;
+      $photo->description = ($request->description && $request->description !== "null") ? $request->description : null;
       $photo->_token = generateRandomString();
       $photo->save();
 
