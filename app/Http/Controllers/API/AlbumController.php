@@ -59,10 +59,18 @@ class AlbumController extends BaseController
     }
 
     public function store ($token, Request $request) {
-      $req_photo = json_decode($request->photo);
+      $req_photos = json_decode($request->photos);
+      // $req_images = json_decode($request->images_array);
       $req_subgalleries = json_decode($request->subgalleries);
       $req_subgallerytags = json_decode($request->subgallerytags);
       $req_tags = json_decode($request->tags);
+
+      // $test = [];
+      // foreach ($request->images_array as $iindex => $req_image) {
+      //   array_push($test, $req_image);
+      // }
+
+      // return $test;
 
       $rules = [
         'title' => 'required|unique:albums,title',
@@ -70,7 +78,7 @@ class AlbumController extends BaseController
         'venue' => 'required',
         'event_date' => 'required',
         'description' => 'required',
-        'img_path' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:4086',
+        // 'img_path' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:50000',
       ];
   
       $message = [
@@ -80,9 +88,9 @@ class AlbumController extends BaseController
         'venue.required' => 'This field is required.',
         'event_date.required' => 'This field is required.',
         'description.required' => 'This field is required.',
-        'img_path.required' => 'Please upload image.',
-        'img_path.max' => 'Please upload image with maximum size of 4086.',
-        'img_path.mimes' => 'Image with jpeg, png, jpg, gif & svg file type is only allowed.',
+        // 'img_path.required' => 'Please upload image.',
+        // 'img_path.max' => 'Please upload image with maximum size of 50000.',
+        // 'img_path.mimes' => 'Image with jpeg, png, jpg, gif & svg file type is only allowed.',
       ];
 
       $validator = Validator::make($request->all(), $rules, $message);
@@ -103,25 +111,39 @@ class AlbumController extends BaseController
       $album->_token = generateRandomString();
       $album->save();
 
-      // add photo
-      $photo = new Photo;
-      $photo->user_id = $user->id;
-      $photo->album_id = $album->id;
-      $photo->file_name = $req_photo->file_name;
-      $photo->file_size = $req_photo->file_size;
-      $photo->file_type = $req_photo->file_type;
-      $photo->file_extension = $request->img_path->getClientOriginalExtension();
-      $photo->description = ($request->description && $request->description !== "null") ? $request->description : null;
-      $photo->_token = generateRandomString();
-      $photo->save();
+      // upload images
+      foreach ($request->images_array as $iindex => $req_image) {
+        // add photos to database
+        foreach ($req_photos as $pindex => $req_photo) {
+          if ($iindex == $pindex) {
+            $photo = new Photo;
+            $photo->user_id = $user->id;
+            $photo->album_id = $album->id;
+            $photo->file_name = $req_photo->file_name;
+            $photo->file_size = $req_photo->file_size;
+            $photo->file_type = $req_photo->file_type;
+            $photo->file_extension = $req_image->getClientOriginalExtension();
+            $photo->description = ($request->description && $request->description !== "null") ? $request->description : null;
+            $photo->_token = generateRandomString();
+            $photo->save();
+
+            $file_location = 'images/'.$album->_token;
+            $file = $photo->_token . '.' . $photo->file_extension;
+          }
+        }
+        $req_image->move(public_path($file_location), $file);
+
+        // generate thumbnail
+        generateThumbnail($album, $photo);
+      }
 
       // upload image
-      $file_location = 'images/'.$album->_token;
-      $image = $photo->_token . '.' . $photo->file_extension;
-      $request->img_path->move(public_path($file_location), $image);
+      // $file_location = 'images/'.$album->_token;
+      // $image = $photo->_token . '.' . $photo->file_extension;
+      // $request->img_path->move(public_path($file_location), $image);
 
       // generate thumbnail
-      generateThumbnail($album, $photo);
+      // generateThumbnail($album, $photo);
 
       // save main gallery as tag
       $gamap = new GAMap;
@@ -130,10 +152,12 @@ class AlbumController extends BaseController
       $gamap->save();
 
       // also save parent gallery as tag
-      $gamap = new GAMap;
-      $gamap->gallery_id = $gallery->parent_id;
-      $gamap->album_id = $album->id;
-      $gamap->save();
+      if ($gallery->parent_id) {
+        $gamap = new GAMap;
+        $gamap->gallery_id = $gallery->parent_id;
+        $gamap->album_id = $album->id;
+        $gamap->save();
+      }
 
       // save sub-galleries as tag
       if (count($req_subgalleries) > 0) {
@@ -240,12 +264,12 @@ class AlbumController extends BaseController
       $album = Album::where('_token', $token)->first();
 
       $rules = [
-        'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:50000'
       ];
   
       $message = [
         'image.required' => 'Please upload an image.',
-        'image.max' => 'Please upload image with maximum size of 2048.',
+        'image.max' => 'Please upload image with maximum size of 50000.',
         'image.mimes' => 'Image with jpeg, png, jpg, gif & svg file type is only allowed.'
       ];
       $validator = Validator::make($request->all(), $rules, $message);
