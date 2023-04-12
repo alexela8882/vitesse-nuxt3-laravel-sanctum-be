@@ -9,6 +9,7 @@ use App\Models\Photo;
 use App\Models\Album;
 use App\Models\Gallery;
 use App\Models\GalleryAlbumMap as GAMap;
+use App\Models\GalleryPhotoMap as GPMap;
 
 use Spatie\Tags\Tag;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -126,17 +127,49 @@ class AlbumController extends BaseController
             $photo->country_id = $req_photo->country_id;
             $photo->event_date = $req_photo->event_date;
             $photo->file_extension = $req_image->getClientOriginalExtension();
-            $photo->description = ($request->description && $request->description !== "null") ? $request->description : null;
+            $photo->description = ($req_photo->description && $req_photo->description !== "null") ? $req_photo->description : null;
             $photo->_token = generateRandomString();
             $photo->save();
 
+            // delete current maps first
+            GPMap::where('photo_id', $photo->id)->delete();
+
+            // save sub-galleries as tag
+            if (count($req_photo->subgalleries) > 0) {
+              foreach ($req_photo->subgalleries as $subgallery) {
+                $gpmap = new GPMap;
+                $gpmap->gallery_id = $subgallery->id;
+                $gpmap->photo_id = $photo->id;
+                $gpmap->save();
+
+                // also save parent gallery as tag
+                if ($subgallery->parent_id) {
+                  $gpmap = new GPMap;
+                  $gpmap->gallery_id = $subgallery->parent_id;
+                  $gpmap->photo_id = $photo->id;
+                  $gpmap->save();
+                }
+              }
+            }
+
+            // collect all tags from photo tags and gallery tags
+            $allTags = [];
+            foreach ($req_photo->tags as $tag) array_push($allTags, $tag);
+            foreach ($req_photo->subgallerytags as $subgallerytag) array_push($allTags, $subgallerytag);
+
+            // sync tags
+            $photo->syncTags([]); // reset first
+            foreach ($allTags as $allTag) $photo->attachTag($allTag->name->en, $allTag->type);
+
+            // generate file for uploading
             $file_location = 'images/'.$album->_token;
             $file = $photo->_token . '.' . $photo->file_extension;
           }
         }
+        // upload images
         $req_image->move(public_path($file_location), $file);
 
-        // generate thumbnail
+        // generate thumbnails
         generateThumbnail($album, $photo);
       }
 
