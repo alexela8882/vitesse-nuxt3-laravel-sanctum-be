@@ -122,6 +122,9 @@ class AlbumController extends BaseController
             $photo->file_name = $req_photo->file_name;
             $photo->file_size = $req_photo->file_size;
             $photo->file_type = $req_photo->file_type;
+            $photo->description = $req_photo->country_id;
+            $photo->country_id = $req_photo->country_id;
+            $photo->event_date = $req_photo->event_date;
             $photo->file_extension = $req_image->getClientOriginalExtension();
             $photo->description = ($request->description && $request->description !== "null") ? $request->description : null;
             $photo->_token = generateRandomString();
