@@ -20,7 +20,9 @@ class PhotoController extends BaseController
     public  function _get ($token) {
       $photo = Photo::where('_token', $token)
               ->with(['gallerymaps' => function ($qry) {
-                $qry->with('gallery');
+                $qry->with(['gallery' => function ($qry) {
+                  $qry->with('tags');
+                }]);
               }])
               ->with('tags')
               ->first();
@@ -79,7 +81,7 @@ class PhotoController extends BaseController
       GPMap::where('photo_id', $photo->id)->delete();
 
       // save galleries as tag
-      if (count($request->galleries) > 0) {
+      if ($request->galleries && count($request->galleries) > 0) {
         foreach ($request->galleries as $gallery) {
           $gpmap = new GPMap;
           $gpmap->gallery_id = $gallery['id'];

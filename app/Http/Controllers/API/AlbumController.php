@@ -142,17 +142,17 @@ class AlbumController extends BaseController
             GPMap::where('photo_id', $photo->id)->delete();
 
             // save sub-galleries as tag
-            if (count($req_photo->subgalleries) > 0) {
-              foreach ($req_photo->subgalleries as $subgallery) {
+            if (count($req_photo->galleries) > 0) {
+              foreach ($req_photo->galleries as $gallery) {
                 $gpmap = new GPMap;
-                $gpmap->gallery_id = $subgallery->id;
+                $gpmap->gallery_id = $gallery->id;
                 $gpmap->photo_id = $photo->id;
                 $gpmap->save();
 
                 // also save parent gallery as tag
-                if ($subgallery->parent_id) {
+                if ($gallery->parent_id) {
                   $gpmap = new GPMap;
-                  $gpmap->gallery_id = $subgallery->parent_id;
+                  $gpmap->gallery_id = $gallery->parent_id;
                   $gpmap->photo_id = $photo->id;
                   $gpmap->save();
                 }
@@ -162,7 +162,7 @@ class AlbumController extends BaseController
             // collect all tags from photo tags and gallery tags
             $allTags = [];
             foreach ($req_photo->tags as $tag) array_push($allTags, $tag);
-            foreach ($req_photo->subgallerytags as $subgallerytag) array_push($allTags, $subgallerytag);
+            foreach ($req_photo->gallerytags as $gallerytag) array_push($allTags, $gallerytag);
 
             // sync tags
             $photo->syncTags([]); // reset first
