@@ -25,7 +25,14 @@ class AlbumController extends BaseController
 
     public  function _get ($token) {
       $album = Album::where('_token', $token)
-              ->with('photos')
+              ->with(['photos' => function ($qry) {
+                $qry->with(['gallerymaps' => function ($qry) {
+                  $qry->with(['gallery' => function ($qry) {
+                    $qry->with('tags');
+                  }]);
+                }])
+                ->with('tags');
+              }])
               ->with(['gallerymaps' => function ($qry) {
                 $qry->with('gallery');
               }])
