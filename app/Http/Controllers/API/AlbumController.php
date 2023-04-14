@@ -58,6 +58,18 @@ class AlbumController extends BaseController
       $album->galleries = $arrGalleries;
       $album->other_tags = $arrTags;
 
+      // get paginated photos
+      // $pphotos = Photo::where('album_id', $album->id)
+      //                   ->with(['gallerymaps' => function ($qry) {
+      //                     $qry->with(['gallery' => function ($qry) {
+      //                       $qry->with('tags');
+      //                     }]);
+      //                   }])
+      //                   ->with('tags')
+      //                   ->paginate(1);
+
+      // $album->photos = $pphotos;
+
       return $album;
     }
 
@@ -72,13 +84,6 @@ class AlbumController extends BaseController
       $req_subgalleries = json_decode($request->subgalleries);
       $req_subgallerytags = json_decode($request->subgallerytags);
       $req_tags = json_decode($request->tags);
-
-      // $test = [];
-      // foreach ($request->images_array as $iindex => $req_image) {
-      //   array_push($test, $req_image);
-      // }
-
-      // return $test;
 
       $rules = [
         'title' => 'required|unique:albums,title',

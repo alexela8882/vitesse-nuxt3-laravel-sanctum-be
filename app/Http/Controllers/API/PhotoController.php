@@ -59,12 +59,11 @@ class PhotoController extends BaseController
       $photo = Photo::where('_token', $token)->first();
 
       $rules = [
-        'file_name' => 'required|unique:photos,file_name,'.$photo->id
+        'file_name' => 'required'
       ];
   
       $message = [
         'file_name.required' => 'This field is required.',
-        'file_name.unique' => 'The name is already taken. Please choose another.'
       ];
       $validator = Validator::make($request->all(), $rules, $message);
   
