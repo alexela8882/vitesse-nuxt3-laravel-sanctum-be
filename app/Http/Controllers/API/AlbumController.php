@@ -362,7 +362,14 @@ class AlbumController extends BaseController
       // get album
       $album = Album::where('_token', $token)->first();
 
-      $photos = Photo::where('album_id', $album->id)->paginate(6);
+      $photos = Photo::where('album_id', $album->id)
+                ->with(['gallerymaps' => function ($qry) {
+                  $qry->with(['gallery' => function ($qry) {
+                    $qry->with('tags');
+                  }]);
+                }])
+                ->with('tags')
+                ->paginate(6);
 
       return response()->json($photos, 200);
     }
