@@ -236,7 +236,7 @@ class GalleryController extends BaseController
       // append method, albums & photos count
       $custom = collect(['method' => 'GET', 'album_count' => $albums->count(), 'photo_count' => $photos->count()]);
 
-      $data = $albums->merge($photos);
+      $data = $albums->toBase()->merge($photos);
       $collection = (new Collection($data))->sortByDate('created_at', true)->paginate(5);
 
       // fix for data returning object on other pages
@@ -424,7 +424,7 @@ class GalleryController extends BaseController
       // append method, albums & photos count
       $custom = collect(['method' => 'POST', 'album_count' => $albums->count(), 'photo_count' => $photos->count()]);
 
-      $data = $albums->merge($photos);
+      $data = $albums->toBase()->merge($photos);
 
       if ($request->filter['sort'] == 'asc') $collection = (new Collection($data))->sortByDate('created_at', true)->paginate(5);
       else $collection = (new Collection($data))->sortByDate('created_at', false)->paginate(5);
