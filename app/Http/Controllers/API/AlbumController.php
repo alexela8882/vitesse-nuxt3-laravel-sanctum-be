@@ -273,7 +273,7 @@ class AlbumController extends BaseController
       $album = Album::where('_token', $token)->first();
       $album->user_id = $user->id;
       $album->title = $request->title;
-      $album->description = $request->description;
+      $album->description = ($request->description && $request->description !== "null") ? $request->description : null;
       $album->country_id = $request->country_id;
       $album->venue = $request->venue;
       // $album->event_date = Carbon::parse($request->event_date)->format('Y-m-d h:i:s');
