@@ -251,7 +251,6 @@ class AlbumController extends BaseController
         'venue' => 'required',
         'date_from' => 'required',
         'date_to' => 'required',
-        'description' => 'required',
         'img_path' => 'required',
       ];
   
@@ -262,7 +261,6 @@ class AlbumController extends BaseController
         'venue.required' => 'This field is required.',
         'date_from.required' => 'This field is required.',
         'date_to.required' => 'This field is required.',
-        'description.required' => 'This field is required.',
         'img_path.required' => 'Please upload image.',
       ];
 
