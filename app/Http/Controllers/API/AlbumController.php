@@ -9,18 +9,30 @@ use App\Models\Photo;
 use App\Models\Album;
 use App\Models\Gallery;
 use App\Models\GalleryAlbumMap as GAMap;
+use App\Models\GalleryPhotoMap as GPMap;
+
 use Spatie\Tags\Tag;
 use Intervention\Image\ImageManagerStatic as Image;
+use Illuminate\Support\Facades\Storage;
 
 use Carbon\Carbon;
 use Validator;
+use File;
+use ZipArchive;
 
 class AlbumController extends BaseController
 {
 
     public  function _get ($token) {
       $album = Album::where('_token', $token)
-              ->with('photos')
+              ->with(['photos' => function ($qry) {
+                $qry->with(['gallerymaps' => function ($qry) {
+                  $qry->with(['gallery' => function ($qry) {
+                    $qry->with('tags');
+                  }]);
+                }])
+                ->with('tags');
+              }])
               ->with(['gallerymaps' => function ($qry) {
                 $qry->with('gallery');
               }])
@@ -46,6 +58,18 @@ class AlbumController extends BaseController
       $album->galleries = $arrGalleries;
       $album->other_tags = $arrTags;
 
+      // get paginated photos
+      // $pphotos = Photo::where('album_id', $album->id)
+      //                   ->with(['gallerymaps' => function ($qry) {
+      //                     $qry->with(['gallery' => function ($qry) {
+      //                       $qry->with('tags');
+      //                     }]);
+      //                   }])
+      //                   ->with('tags')
+      //                   ->paginate(1);
+
+      // $album->photos = $pphotos;
+
       return $album;
     }
 
@@ -55,7 +79,8 @@ class AlbumController extends BaseController
     }
 
     public function store ($token, Request $request) {
-      $req_photo = json_decode($request->photo);
+      $req_photos = json_decode($request->photos);
+      // $req_images = json_decode($request->images_array);
       $req_subgalleries = json_decode($request->subgalleries);
       $req_subgallerytags = json_decode($request->subgallerytags);
       $req_tags = json_decode($request->tags);
@@ -64,9 +89,10 @@ class AlbumController extends BaseController
         'title' => 'required|unique:albums,title',
         'country_id' => 'required',
         'venue' => 'required',
-        'event_date' => 'required',
-        'description' => 'required',
-        'img_path' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:4086',
+        'date_from' => 'required',
+        'date_to' => 'required',
+        // 'description' => 'required',
+        // 'img_path' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:50000',
       ];
   
       $message = [
@@ -74,11 +100,12 @@ class AlbumController extends BaseController
         'title.unique' => 'Ttitle already taken. Please choose another title.',
         'country_id.required' => 'This field is required.',
         'venue.required' => 'This field is required.',
-        'event_date.required' => 'This field is required.',
-        'description.required' => 'This field is required.',
-        'img_path.required' => 'Please upload image.',
-        'img_path.max' => 'Please upload image with maximum size of 4086.',
-        'img_path.mimes' => 'Image with jpeg, png, jpg, gif & svg file type is only allowed.',
+        'date_from.required' => 'This field is required.',
+        'date_to.required' => 'This field is required.',
+        // 'description.required' => 'This field is required.',
+        // 'img_path.required' => 'Please upload image.',
+        // 'img_path.max' => 'Please upload image with maximum size of 50000.',
+        // 'img_path.mimes' => 'Image with jpeg, png, jpg, gif & svg file type is only allowed.',
       ];
 
       $validator = Validator::make($request->all(), $rules, $message);
@@ -91,39 +118,98 @@ class AlbumController extends BaseController
       $album = new Album;
       $album->user_id = $user->id;
       $album->title = $request->title;
-      $album->description = $request->description;
+      $album->description = ($request->description && $request->description !== "null") ? $request->description : null;
       $album->country_id = $request->country_id;
       $album->venue = $request->venue;
-      $album->event_date = Carbon::parse($request->event_date)->format('Y-m-d h:i:s');
+      $album->event_date = Carbon::parse($request->date_from)->format('Y-m-d h:i:s');
+      $album->date_from = Carbon::parse($request->date_from)->format('Y-m-d h:i:s');
+      $album->date_to = Carbon::parse($request->date_to)->format('Y-m-d h:i:s');
       $album->img_path = $request->img_path;
       $album->_token = generateRandomString();
       $album->save();
 
-      // add photo
-      $photo = new Photo;
-      $photo->user_id = $user->id;
-      $photo->album_id = $album->id;
-      $photo->file_name = $req_photo->file_name;
-      $photo->file_size = $req_photo->file_size;
-      $photo->file_type = $req_photo->file_type;
-      $photo->file_extension = $request->img_path->getClientOriginalExtension();
-      $photo->description = $request->description;
-      $photo->_token = generateRandomString();
-      $photo->save();
+      // upload images
+      foreach ($request->images_array as $iindex => $req_image) {
+        // add photos to database
+        foreach ($req_photos as $pindex => $req_photo) {
+          if ($iindex == $pindex) {
+            $photo = new Photo;
+            $photo->user_id = $user->id;
+            $photo->album_id = $album->id;
+            $photo->file_name = $req_photo->file_name;
+            $photo->file_size = $req_photo->file_size;
+            $photo->file_type = $req_photo->file_type;
+            $photo->description = $req_photo->country_id;
+            $photo->country_id = $req_photo->country_id;
+            $photo->event_date = $req_photo->event_date;
+            $photo->file_extension = $req_image->getClientOriginalExtension();
+            $photo->description = ($req_photo->description && $req_photo->description !== "null") ? $req_photo->description : null;
+            $photo->_token = generateRandomString();
+            $photo->save();
+
+            // delete current maps first
+            GPMap::where('photo_id', $photo->id)->delete();
+
+            // save sub-galleries as tag
+            if (count($req_photo->galleries) > 0) {
+              foreach ($req_photo->galleries as $gallery) {
+                $gpmap = new GPMap;
+                $gpmap->gallery_id = $gallery->id;
+                $gpmap->photo_id = $photo->id;
+                $gpmap->save();
+
+                // also save parent gallery as tag
+                if ($gallery->parent_id) {
+                  $gpmap = new GPMap;
+                  $gpmap->gallery_id = $gallery->parent_id;
+                  $gpmap->photo_id = $photo->id;
+                  $gpmap->save();
+                }
+              }
+            }
+
+            // collect all tags from photo tags and gallery tags
+            $allTags = [];
+            foreach ($req_photo->tags as $tag) array_push($allTags, $tag);
+            foreach ($req_photo->gallerytags as $gallerytag) array_push($allTags, $gallerytag);
+
+            // sync tags
+            $photo->syncTags([]); // reset first
+            foreach ($allTags as $allTag) $photo->attachTag($allTag->name->en, $allTag->type);
+
+            // generate file for uploading
+            $file_location = 'images/'.$album->_token;
+            $file = $photo->_token . '.' . $photo->file_extension;
+          }
+        }
+        // upload images
+        $req_image->move(public_path($file_location), $file);
+
+        // generate thumbnails
+        generateThumbnail($album, $photo);
+      }
 
       // upload image
-      $file_location = 'images/'.$album->_token;
-      $image = $photo->_token . '.' . $photo->file_extension;
-      $request->img_path->move(public_path($file_location), $image);
+      // $file_location = 'images/'.$album->_token;
+      // $image = $photo->_token . '.' . $photo->file_extension;
+      // $request->img_path->move(public_path($file_location), $image);
 
       // generate thumbnail
-      generateThumbnail($album, $photo);
+      // generateThumbnail($album, $photo);
 
       // save main gallery as tag
       $gamap = new GAMap;
       $gamap->gallery_id = $gallery->id;
       $gamap->album_id = $album->id;
       $gamap->save();
+
+      // also save parent gallery as tag
+      if ($gallery->parent_id) {
+        $gamap = new GAMap;
+        $gamap->gallery_id = $gallery->parent_id;
+        $gamap->album_id = $album->id;
+        $gamap->save();
+      }
 
       // save sub-galleries as tag
       if (count($req_subgalleries) > 0) {
@@ -163,7 +249,8 @@ class AlbumController extends BaseController
         'title' => 'required|unique:albums,title,'.$request->id,
         'country_id' => 'required',
         'venue' => 'required',
-        'event_date' => 'required',
+        'date_from' => 'required',
+        'date_to' => 'required',
         'description' => 'required',
         'img_path' => 'required',
       ];
@@ -173,7 +260,8 @@ class AlbumController extends BaseController
         'title.unique' => 'Ttitle already taken. Please choose another title.',
         'country_id.required' => 'This field is required.',
         'venue.required' => 'This field is required.',
-        'event_date.required' => 'This field is required.',
+        'date_from.required' => 'This field is required.',
+        'date_to.required' => 'This field is required.',
         'description.required' => 'This field is required.',
         'img_path.required' => 'Please upload image.',
       ];
@@ -190,7 +278,9 @@ class AlbumController extends BaseController
       $album->description = $request->description;
       $album->country_id = $request->country_id;
       $album->venue = $request->venue;
-      $album->event_date = Carbon::parse($request->event_date)->format('Y-m-d h:i:s');
+      // $album->event_date = Carbon::parse($request->event_date)->format('Y-m-d h:i:s');
+      $album->date_from = Carbon::parse($request->date_from)->format('Y-m-d h:i:s');
+      $album->date_to = Carbon::parse($request->date_to)->format('Y-m-d h:i:s');
       $album->img_path = $request->img_path;
       $album->update();
 
@@ -230,12 +320,12 @@ class AlbumController extends BaseController
       $album = Album::where('_token', $token)->first();
 
       $rules = [
-        'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:50000'
       ];
   
       $message = [
         'image.required' => 'Please upload an image.',
-        'image.max' => 'Please upload image with maximum size of 2048.',
+        'image.max' => 'Please upload image with maximum size of 50000.',
         'image.mimes' => 'Image with jpeg, png, jpg, gif & svg file type is only allowed.'
       ];
       $validator = Validator::make($request->all(), $rules, $message);
@@ -252,7 +342,7 @@ class AlbumController extends BaseController
       $photo->file_size = $request->file('image')->getSize();
       $photo->file_type = $request->file('image')->getClientMimeType();
       $photo->file_extension = $request->image->getClientOriginalExtension();
-      $photo->description = $request->description;
+      $photo->description = ($request->description && $request->description !== "null") ? $request->description : null;
       $photo->_token = generateRandomString();
       $photo->save();
 
@@ -280,7 +370,14 @@ class AlbumController extends BaseController
       // get album
       $album = Album::where('_token', $token)->first();
 
-      $photos = Photo::where('album_id', $album->id)->paginate(6);
+      $photos = Photo::where('album_id', $album->id)
+                ->with(['gallerymaps' => function ($qry) {
+                  $qry->with(['gallery' => function ($qry) {
+                    $qry->with('tags');
+                  }]);
+                }])
+                ->with('tags')
+                ->paginate(6);
 
       return response()->json($photos, 200);
     }
@@ -333,5 +430,30 @@ class AlbumController extends BaseController
       ];
 
       return response()->json($response, 200);
+    }
+
+    public function downloadAlbum ($token) {
+      // // get album
+      $album = Album::where('_token', $token)->first();
+
+      $zip = new ZipArchive();
+      $zipFileName = $album['title'] . '.zip';
+      $dir = public_path($zipFileName);
+
+      if ($zip->open(public_path($zipFileName), ZipArchive::CREATE) == TRUE) {
+        $files = File::files(public_path('images/' . $token));
+        foreach ($files as $key => $value) {
+          $relativeName = basename($value);
+          $zip->addFile($value, $relativeName);
+        }
+        $zip->close();
+      }
+
+      $headers = array(
+        'Content-Type' => 'application/octet-stream',
+      );
+
+      if(file_exists($dir)) return response()->download($dir, $zipFileName, $headers)->deleteFileAfterSend(true);
+      else return response()->json('File not found.', 404);
     }
 }

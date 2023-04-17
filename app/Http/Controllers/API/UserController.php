@@ -7,6 +7,8 @@ use App\Http\Controllers\API\BaseController as BaseController;
 
 use App\Models\User;
 use App\Models\UserInfo;
+use App\Models\Gallery;
+use App\Models\GalleryAccessMap as GACMap;
 
 use Validator;
 
@@ -36,7 +38,22 @@ class UserController extends BaseController
             ->select('id', '_token', 'name', 'email')
             ->with('info')
             ->first();
+
+    // set roles
     $user->roles;
+
+    // get galleries through access maps
+    $galleries = [];
+    $gacmaps = GACMap::where('user_id', $user->id)->get();
+    foreach ($gacmaps as $gacmap) {
+      $gallery = Gallery::where('id', $gacmap->gallery_id)->first();
+      array_push($galleries, $gallery);
+    }
+
+    // set galleries
+    $user->galleries = $galleries;
+
+
 
     return response()->json($user);
   }
@@ -170,5 +187,28 @@ class UserController extends BaseController
     ];
 
     return response()->json($response);
+  }
+
+  public function updateAccess ($token, Request $request) {
+    // get user
+    $user = User::where('_token', $token)->first();
+
+    // delete Gallery Access Maps first
+    GACMap::where('user_id', $user->id)->delete();
+
+    // then re-populate new galleries
+    foreach ($request->all() as $gallery) {
+      $gacmap = new GACMap;
+      $gacmap->user_id = $user->id;
+      $gacmap->gallery_id = $gallery['id'];
+      $gacmap->save();
+    }
+
+    $response = [
+      'data' => $user,
+      'message' => 'Access for this user has been successfully updated.',
+    ];
+  
+    return response()->json($response, 200);
   }
 }

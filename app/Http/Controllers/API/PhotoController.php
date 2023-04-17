@@ -20,7 +20,9 @@ class PhotoController extends BaseController
     public  function _get ($token) {
       $photo = Photo::where('_token', $token)
               ->with(['gallerymaps' => function ($qry) {
-                $qry->with('gallery');
+                $qry->with(['gallery' => function ($qry) {
+                  $qry->with('tags');
+                }]);
               }])
               ->with('tags')
               ->first();
@@ -57,12 +59,11 @@ class PhotoController extends BaseController
       $photo = Photo::where('_token', $token)->first();
 
       $rules = [
-        'file_name' => 'required|unique:photos,file_name,'.$photo->id
+        'file_name' => 'required'
       ];
   
       $message = [
         'file_name.required' => 'This field is required.',
-        'file_name.unique' => 'The name is already taken. Please choose another.'
       ];
       $validator = Validator::make($request->all(), $rules, $message);
   
@@ -79,7 +80,7 @@ class PhotoController extends BaseController
       GPMap::where('photo_id', $photo->id)->delete();
 
       // save galleries as tag
-      if (count($request->galleries) > 0) {
+      if ($request->galleries && count($request->galleries) > 0) {
         foreach ($request->galleries as $gallery) {
           $gpmap = new GPMap;
           $gpmap->gallery_id = $gallery['id'];
