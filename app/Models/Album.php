@@ -13,8 +13,18 @@ class Album extends Model
     use HasFactory, HasTags;
 
     public function getEventDateAttribute($value) {
-        $carbon = new Carbon($value);
-        return $carbon->format('F d, Y');
+      $carbon = new Carbon($value);
+      return $carbon->format('F d, Y');
+    }
+
+    public function getDateFromAttribute($value) {
+      $carbon = new Carbon($value);
+      return $carbon->format('F d, Y');
+    }
+
+    public function getDateToAttribute($value) {
+      $carbon = new Carbon($value);
+      return $carbon->format('F d, Y');
     }
 
     public function country () {

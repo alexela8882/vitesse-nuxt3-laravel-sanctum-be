@@ -89,8 +89,9 @@ class AlbumController extends BaseController
         'title' => 'required|unique:albums,title',
         'country_id' => 'required',
         'venue' => 'required',
-        'event_date' => 'required',
-        'description' => 'required',
+        'date_from' => 'required',
+        'date_to' => 'required',
+        // 'description' => 'required',
         // 'img_path' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:50000',
       ];
   
@@ -99,8 +100,9 @@ class AlbumController extends BaseController
         'title.unique' => 'Ttitle already taken. Please choose another title.',
         'country_id.required' => 'This field is required.',
         'venue.required' => 'This field is required.',
-        'event_date.required' => 'This field is required.',
-        'description.required' => 'This field is required.',
+        'date_from.required' => 'This field is required.',
+        'date_to.required' => 'This field is required.',
+        // 'description.required' => 'This field is required.',
         // 'img_path.required' => 'Please upload image.',
         // 'img_path.max' => 'Please upload image with maximum size of 50000.',
         // 'img_path.mimes' => 'Image with jpeg, png, jpg, gif & svg file type is only allowed.',
@@ -119,7 +121,9 @@ class AlbumController extends BaseController
       $album->description = ($request->description && $request->description !== "null") ? $request->description : null;
       $album->country_id = $request->country_id;
       $album->venue = $request->venue;
-      $album->event_date = Carbon::parse($request->event_date)->format('Y-m-d h:i:s');
+      $album->event_date = Carbon::parse($request->date_from)->format('Y-m-d h:i:s');
+      $album->date_from = Carbon::parse($request->date_from)->format('Y-m-d h:i:s');
+      $album->date_to = Carbon::parse($request->date_to)->format('Y-m-d h:i:s');
       $album->img_path = $request->img_path;
       $album->_token = generateRandomString();
       $album->save();
@@ -245,7 +249,8 @@ class AlbumController extends BaseController
         'title' => 'required|unique:albums,title,'.$request->id,
         'country_id' => 'required',
         'venue' => 'required',
-        'event_date' => 'required',
+        'date_from' => 'required',
+        'date_to' => 'required',
         'description' => 'required',
         'img_path' => 'required',
       ];
@@ -255,7 +260,8 @@ class AlbumController extends BaseController
         'title.unique' => 'Ttitle already taken. Please choose another title.',
         'country_id.required' => 'This field is required.',
         'venue.required' => 'This field is required.',
-        'event_date.required' => 'This field is required.',
+        'date_from.required' => 'This field is required.',
+        'date_to.required' => 'This field is required.',
         'description.required' => 'This field is required.',
         'img_path.required' => 'Please upload image.',
       ];
@@ -272,7 +278,9 @@ class AlbumController extends BaseController
       $album->description = $request->description;
       $album->country_id = $request->country_id;
       $album->venue = $request->venue;
-      $album->event_date = Carbon::parse($request->event_date)->format('Y-m-d h:i:s');
+      // $album->event_date = Carbon::parse($request->event_date)->format('Y-m-d h:i:s');
+      $album->date_from = Carbon::parse($request->date_from)->format('Y-m-d h:i:s');
+      $album->date_to = Carbon::parse($request->date_to)->format('Y-m-d h:i:s');
       $album->img_path = $request->img_path;
       $album->update();
 
