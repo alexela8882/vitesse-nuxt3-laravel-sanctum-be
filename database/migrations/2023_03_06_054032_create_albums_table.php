@@ -20,7 +20,7 @@ class CreateAlbumsTable extends Migration
           $table->foreignId('country_id')->constrained('countries')->unsigned();
           $table->string('venue');
           $table->longtext('description')->nullable();
-          // $table->datetime('event_date');
+          $table->datetime('event_date');
           $table->longtext('img_path');
           $table->string('_token')->default(generateRandomString());
           $table->timestamps();
