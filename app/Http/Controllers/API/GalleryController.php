@@ -325,14 +325,28 @@ class GalleryController extends BaseController
                 ->where(function ($qry) use ($request, $dateFrom, $dateTo) {
                   // date filter
                   if ($request->filter['year']) {
-                    $qry->whereYear('event_date', $request->filter['year']);
+                    $qry->whereYear('date_from', $request->filter['year'])
+                        ->orWhereYear('date_to', $request->filter['year']);
                   } else if(count($request->filter['dates'])) {
-                      $qry->whereIn(\DB::raw("DATE(event_date)"), $request->filter['dates']);
+                    // $qry->whereIn(\DB::raw("DATE(event_date)"), $request->filter['dates']);
+                    // foreach ($request->filter['dates'] as $date) {
+                    //   $qry->where('date_from', '<=', $date)
+                    //       ->where('date_to', '>=', $date);
+                    // }
+                    foreach ($request->filter['dates'] as $date) {
+                      $qry->orWhere(function ($qry) use ($date) {
+                        $qry->where('date_from', '<=', $date)
+                            ->where('date_to', '>=', $date);
+                      });
+                    }
                   } else if ($dateFrom) {
                     $dateFrom = Carbon::parse($dateFrom)->format('Y-m-d');
                     $dateTo = Carbon::parse($dateTo)->addDay()->format('Y-m-d');
 
-                    $qry->whereBetween('event_date', [$dateFrom, $dateTo])->get();
+                    $qry->whereBetween('date_from', [$dateFrom, $dateTo])
+                        ->orWhereBetween('date_to', [$dateFrom, $dateTo]);
+
+                    // $qry->whereBetween('event_date', [$dateFrom, $dateTo])->get();
                   }
 
                   // search filter
@@ -401,7 +415,7 @@ class GalleryController extends BaseController
                       $qry->whereIn(\DB::raw("DATE(event_date)"), $request->filter['dates']);
                   } else if ($dateFrom) {
                     $dateFrom = Carbon::parse($dateFrom)->format('Y-m-d');
-                    $dateTo = Carbon::parse($dateTo)->addDay()->format('Y-m-d');
+                    $dateTo = Carbon::parse($dateTo)->format('Y-m-d');
 
                     $qry->whereBetween('event_date', [$dateFrom, $dateTo])->get();
                   }
