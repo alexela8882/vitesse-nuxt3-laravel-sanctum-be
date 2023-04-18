@@ -33,6 +33,7 @@ class TagController extends BaseController
       // run validation
       $validator = Validator::make($request->all(), [
         'name' => 'required|unique:tags,name',
+        'type' => 'required',
       ]);
   
       if($validator->fails()) return response()->json($validator->errors(), 422);
