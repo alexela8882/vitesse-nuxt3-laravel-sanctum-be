@@ -53,9 +53,9 @@ class TagController extends BaseController
       return response()->json($response, 200);
     }
 
-    public function update ($token, Request $request) {
+    public function update ($id, Request $request) {
       // get tag
-      $tag = Tag::where('_token', $token)->first();
+      $tag = Tag::where('id', $id)->first();
 
       // run validation
       $validator = Validator::make($request->all(), [
@@ -69,6 +69,7 @@ class TagController extends BaseController
       $tag->type = $request->type;
       $tag->color = !$request->type || ($request->color == '#000000' || $request->color == '#ffffff') ? null : $request->color;
       $tag->second_color = !$request->type || ($request->second_color == '#000000' || $request->second_color == '#ffffff') ? null : $request->second_color;
+      $tag->_token = generateRandomString();
       $tag->update();
 
       $response = [
@@ -79,9 +80,9 @@ class TagController extends BaseController
       return response()->json($response, 200);
     }
 
-    public function delete ($token) {
+    public function delete ($id) {
       // fetch data
-      $tag = Tag::where('_token', $token)->first();
+      $tag = Tag::where('id', $id)->first();
   
       $savedTag = $tag;
   
