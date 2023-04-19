@@ -124,6 +124,7 @@ Route::controller(AlbumController::class)->group(function () {
     Route::post('/update/{token}', 'update');
     Route::delete('/delete/{token}', 'delete');
     Route::post('/add-photo/{token}', 'addPhoto');
+    Route::post('/upload-photos/{token}', 'uploadPhotos');
     Route::get('/paginated-photos/{token}', 'pphotos');
     Route::post('/empty/{token}', 'empty');
     Route::get('/download-album/{token}', 'downloadAlbum');
@@ -145,8 +146,8 @@ Route::controller(TagController::class)->group(function () {
     Route::get('/all-paginated', 'allp');
     Route::get('/without-type', 'withoutType');
     Route::put('/store', 'store');
-    Route::post('/update/{token}', 'update');
-    Route::delete('/delete/{token}', 'delete');
+    Route::post('/update/{id}', 'update');
+    Route::delete('/delete/{id}', 'delete');
   });
 });
 

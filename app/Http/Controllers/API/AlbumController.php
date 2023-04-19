@@ -363,6 +363,83 @@ class AlbumController extends BaseController
       return response()->json($response);
     }
 
+    public function uploadPhotos ($token, Request $request) {
+      $req_photos = json_decode($request->photos);
+
+      $user = auth('sanctum')->user();
+      $gallery = Gallery::where('_token', $token)->first();
+
+      $album = Album::where('_token', $token)->first();
+
+      // upload images
+      foreach ($request->images_array as $iindex => $req_image) {
+        // add photos to database
+        foreach ($req_photos as $pindex => $req_photo) {
+          if ($iindex == $pindex) {
+            $photo = new Photo;
+            $photo->user_id = $user->id;
+            $photo->album_id = $album->id;
+            $photo->file_name = $req_photo->file_name;
+            $photo->file_size = $req_photo->file_size;
+            $photo->file_type = $req_photo->file_type;
+            $photo->description = $req_photo->country_id;
+            $photo->country_id = $req_photo->country_id;
+            $photo->event_date = $req_photo->event_date;
+            $photo->file_extension = $req_image->getClientOriginalExtension();
+            $photo->description = ($req_photo->description && $req_photo->description !== "null") ? $req_photo->description : null;
+            $photo->_token = generateRandomString();
+            $photo->save();
+
+            // delete current maps first
+            GPMap::where('photo_id', $photo->id)->delete();
+
+            // save sub-galleries as tag
+            if (count($req_photo->galleries) > 0) {
+              foreach ($req_photo->galleries as $gallery) {
+                $gpmap = new GPMap;
+                $gpmap->gallery_id = $gallery->id;
+                $gpmap->photo_id = $photo->id;
+                $gpmap->save();
+
+                // also save parent gallery as tag
+                if ($gallery->parent_id) {
+                  $gpmap = new GPMap;
+                  $gpmap->gallery_id = $gallery->parent_id;
+                  $gpmap->photo_id = $photo->id;
+                  $gpmap->save();
+                }
+              }
+            }
+
+            // collect all tags from photo tags and gallery tags
+            $allTags = [];
+            foreach ($req_photo->tags as $tag) array_push($allTags, $tag);
+            foreach ($req_photo->gallerytags as $gallerytag) array_push($allTags, $gallerytag);
+
+            // sync tags
+            $photo->syncTags([]); // reset first
+            foreach ($allTags as $allTag) $photo->attachTag($allTag->name->en, $allTag->type);
+
+            // generate file for uploading
+            $file_location = 'images/'.$album->_token;
+            $file = $photo->_token . '.' . $photo->file_extension;
+          }
+        }
+        // upload images
+        $req_image->move(public_path($file_location), $file);
+
+        // generate thumbnails
+        generateThumbnail($album, $photo);
+      }
+
+      $response = [
+        'data' => $album,
+        'message' => 'New photos has been successfully uploaded under album "' . $album->title
+      ];
+
+      return response()->json($response, 200);
+    }
+
     // paginated photos
     public function pphotos ($token) {
       // get album
