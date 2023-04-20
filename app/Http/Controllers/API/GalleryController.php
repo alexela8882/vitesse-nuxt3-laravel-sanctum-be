@@ -61,7 +61,15 @@ class GalleryController extends BaseController
     }
 
     public function parents () {
-      $galleries = Gallery::where('parent_id', null)
+      $gallery_ids = [];
+      $user_galleries = getUserGalleries();
+
+      foreach ($user_galleries as $ugallery) {
+        array_push($gallery_ids, $ugallery->id);
+      }
+
+      $galleries = Gallery::whereIn('id', $gallery_ids)
+                  ->where('parent_id', null)
                   ->with(['albummaps' => function ($qry) {
                     $qry->orderBy('album_id', 'desc')
                         ->with(['album' => function ($qry) {
