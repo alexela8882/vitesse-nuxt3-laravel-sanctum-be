@@ -14,4 +14,8 @@ class GalleryAlbumMap extends Model
     public function gallery () {
       return $this->belongsTo(Gallery::class);
     }
+
+    public function album () {
+      return $this->belongsTo(Album::class);
+    }
 }

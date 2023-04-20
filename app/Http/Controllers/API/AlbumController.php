@@ -467,7 +467,7 @@ class AlbumController extends BaseController
       // delete photos
       Photo::where('album_id', $album->id)->delete();
 
-      // delete galleries
+      // delete gallery maps
       GAMap::where('album_id', $album->id)->delete();
 
       // delete album
