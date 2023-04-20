@@ -104,7 +104,9 @@ Route::controller(UserInfoController::class)->group(function () {
 Route::controller(GalleryController::class)->group(function () {
   Route::group(['prefix' => '/galleries', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/all-unpaginated', 'uall');
+    Route::get('/all-unpaginated-bou', 'buall');
     Route::get('/', 'all');
+    Route::get('/all-paginated-bou', 'ball');
     Route::get('/albums/{token}', 'albums');
     Route::post('/filtered-albums/{token}', 'filteredAlbums');
     Route::get('/lists-e/{token}', 'listsE');

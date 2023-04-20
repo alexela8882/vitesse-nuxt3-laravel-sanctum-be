@@ -6,11 +6,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use App\Http\Controllers\API\BaseController as BaseController;
 
+use App\Models\User;
 use App\Models\Album;
 use App\Models\Photo;
 use App\Models\Region;
 use App\Models\Gallery;
 use App\Models\GalleryAlbumMap as GAMap;
+use App\Models\GalleryAccessMap as GUAMap;
 use App\Models\GalleryPhotoMap as GPMap;
 
 use Spatie\Tags\Tag;
@@ -26,10 +28,30 @@ class GalleryController extends BaseController
       return response()->json($galleries, 200);
     }
 
+    // based on user
+    public function buall () {
+      $galleries = getUserGalleries();
+
+      return response()->json($galleries, 200);
+    }
+
     public function all () {
       $galleries = Gallery::paginate(10);
 
       return $galleries;
+    }
+
+    public function ball () {
+      $gallery_ids = [];
+      $user_galleries = getUserGalleries();
+
+      foreach ($user_galleries as $ugallery) {
+        array_push($gallery_ids, $ugallery->id);
+      }
+
+      $galleries = Gallery::whereIn('id', $gallery_ids)->paginate(10);
+
+      return response()->json($galleries, 200);
     }
 
     public function listsE ($token) {
@@ -57,6 +79,10 @@ class GalleryController extends BaseController
     }
 
     public function get ($token) {
+      // check user access first
+      $check = checkUserGalleryAccess($token);
+      if ($check == 0) return response()->json('unauthorized', 403);
+
       $gallery = $this->generalGet($token);
   
       return response()->json($gallery);
@@ -80,11 +106,22 @@ class GalleryController extends BaseController
         'data' => $gallery,
         'message' => '"' . $gallery->name . '" has been successfully added.'
       ];
+
+      // assign this gallery in user gallery access
+      $_user = auth('sanctum')->user();
+      $guamap = new GUAMap;
+      $guamap->gallery_id = $gallery->id;
+      $guamap->user_id = $_user->id;
+      $guamap->save();
   
       return response()->json($response);
     }
 
     public function update ($token, Request $request) {
+      // check user access first
+      $check = checkUserGalleryAccess($token);
+      if ($check == 0) return response()->json('unauthorized', 403);
+
       // fetch data
       $gallery = Gallery::where('_token', $token)->first();
   
@@ -109,6 +146,10 @@ class GalleryController extends BaseController
     }
 
     public function sync ($token, Request $request) {
+      // check user access first
+      $check = checkUserGalleryAccess($token);
+      if ($check == 0) return response()->json('unauthorized', 403);
+
       if ($request->gallery['parent_id']) {
         // update this gallery
         $gallery = Gallery::where('_token', $token)->first();
@@ -149,6 +190,10 @@ class GalleryController extends BaseController
     }
 
     public function delete ($token) {
+      // check user access first
+      $check = checkUserGalleryAccess($token);
+      if ($check == 0) return response()->json('unauthorized', 403);
+
       // fetch data
       $gallery = Gallery::where('_token', $token)->first();
   
