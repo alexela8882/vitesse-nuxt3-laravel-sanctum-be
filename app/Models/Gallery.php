@@ -9,4 +9,8 @@ use Spatie\Tags\HasTags;
 class Gallery extends Model
 {
     use HasFactory, HasTags;
+
+    public function albummaps () {
+      return $this->hasMany(GalleryAlbumMap::class);
+    }
 }

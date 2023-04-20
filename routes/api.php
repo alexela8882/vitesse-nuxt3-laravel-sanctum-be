@@ -111,6 +111,7 @@ Route::controller(GalleryController::class)->group(function () {
     Route::post('/filtered-albums/{token}', 'filteredAlbums');
     Route::get('/lists-e/{token}', 'listsE');
     Route::get('/lists-parent/{token}', 'allParents');
+    Route::get('/parents', 'parents');
     Route::get('/get/{token}', 'get');
     Route::put('/store', 'store');
     Route::post('/update/{token}', 'update');

@@ -60,6 +60,21 @@ class GalleryController extends BaseController
       return response()->json($galleries, 200);
     }
 
+    public function parents () {
+      $galleries = Gallery::where('parent_id', null)
+                  ->with(['albummaps' => function ($qry) {
+                    $qry->orderBy('album_id', 'desc')
+                        ->with(['album' => function ($qry) {
+                          $qry->with('country')
+                              ->with('tags')
+                              ->with('photos');
+                        }]);
+                  }])
+                  ->get();
+
+      return response()->json($galleries, 200);
+    }
+
     public function allParents ($token) {
       $galleries = Gallery::where('_token', '!=', $token)->where('parent_id', null)->get();
 
