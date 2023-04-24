@@ -23,7 +23,29 @@ use Carbon\Carbon;
 class GalleryController extends BaseController
 {
     public function uall () {
-      $galleries = Gallery::with('tags')->get();
+      $gallery_ids = [];
+      $user = auth('sanctum')->user();
+
+      if ($user) $galleries = getUserGalleries();
+      else $galleries = Gallery::all();
+
+      foreach ($galleries as $ugallery) {
+        array_push($gallery_ids, $ugallery->id);
+      }
+
+      $galleries = Gallery::whereIn('id', $gallery_ids)
+                  ->with(['albummaps' => function ($qry) {
+                    $qry->orderBy('album_id', 'desc')
+                        ->with(['album' => function ($qry) {
+                          $qry->with('country')
+                              ->with('tags')
+                              ->with('photos');
+                        }]);
+                  }])
+                  ->get();
+
+      return response()->json($galleries, 200);
+      // $galleries = Gallery::with('tags')->get();
 
       return response()->json($galleries, 200);
     }

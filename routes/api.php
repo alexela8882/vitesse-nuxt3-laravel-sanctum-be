@@ -117,10 +117,10 @@ Route::controller(GalleryController::class)->group(function () {
     Route::get('/lists-parent/{token}', 'allParents');
     Route::get('/parents', 'parents');
     Route::get('/get/{token}', 'get');
-    Route::put('/store', 'store');
-    Route::post('/update/{token}', 'update');
-    Route::post('/sync/{token}', 'sync');
-    Route::delete('/delete/{token}', 'delete');
+    Route::put('/store', 'store')->middleware('auth:sanctum');
+    Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
+    Route::post('/sync/{token}', 'sync')->middleware('auth:sanctum');
+    Route::delete('/delete/{token}', 'delete')->middleware('auth:sanctum');
   });
 });
 
