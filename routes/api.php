@@ -31,6 +31,10 @@ use App\Models\User;
 |
 */
 
+Route::get('/getsubdomain', function () {
+  return getSubdomain();
+});
+
 Route::controller(AuthController::class)->group(function(){
   Route::post('register', 'register');
   Route::post('login', 'login');

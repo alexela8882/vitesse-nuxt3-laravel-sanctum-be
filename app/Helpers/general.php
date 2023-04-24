@@ -132,3 +132,12 @@ if (! function_exists('getUserGalleries')) {
     return $data;
   }
 }
+
+if (! function_exists('getSubdomain')) {
+  function getSubdomain() {
+    $url = request()->getHost();
+    $arrUrl = explode('.', $url);
+    $subdomain = count($arrUrl) > 1 ? $arrUrl[0] : null;
+    return $subdomain;
+  }
+}
