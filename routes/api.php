@@ -78,7 +78,7 @@ Route::controller(PermissionController::class)->group(function () {
 });
 
 Route::controller(CountryController::class)->group(function () {
-  Route::group(['prefix' => '/countries', 'middleware' => ['auth:sanctum']], function () {
+  Route::group(['prefix' => '/countries'], function () {
     Route::get('/', 'all');
   });
 });
@@ -102,7 +102,7 @@ Route::controller(UserInfoController::class)->group(function () {
 });
 
 Route::controller(GalleryController::class)->group(function () {
-  Route::group(['prefix' => '/galleries', 'middleware' => ['auth:sanctum']], function () {
+  Route::group(['prefix' => '/galleries'], function () {
     Route::get('/all-unpaginated', 'uall');
     Route::get('/all-unpaginated-bou', 'buall');
     Route::get('/', 'all');
@@ -144,18 +144,18 @@ Route::controller(PhotoController::class)->group(function () {
 });
 
 Route::controller(TagController::class)->group(function () {
-  Route::group(['prefix' => '/tags', 'middleware' => ['auth:sanctum']], function () {
+  Route::group(['prefix' => '/tags'], function () {
     Route::get('/', 'all');
-    Route::get('/all-paginated', 'allp');
-    Route::get('/without-type', 'withoutType');
-    Route::put('/store', 'store');
-    Route::post('/update/{id}', 'update');
-    Route::delete('/delete/{id}', 'delete');
+    Route::get('/all-paginated', 'allp')->middleware('auth:sanctum');
+    Route::get('/without-type', 'withoutType')->middleware('auth:sanctum');
+    Route::put('/store', 'store')->middleware('auth:sanctum');
+    Route::post('/update/{id}', 'update')->middleware('auth:sanctum');
+    Route::delete('/delete/{id}', 'delete')->middleware('auth:sanctum');
   });
 });
 
 Route::controller(RegionController::class)->group(function () {
-  Route::group(['prefix' => '/regions', 'middleware' => ['auth:sanctum']], function () {
+  Route::group(['prefix' => '/regions'], function () {
     Route::get('/', 'all');
   });
 });

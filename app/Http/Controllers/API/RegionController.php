@@ -14,4 +14,10 @@ class RegionController extends BaseController
 
       return response()->json($regions, 200);
     }
+
+    public function allp () {
+      $regions = Region::with('countries')->get();
+
+      return response()->json($regions, 200);
+    }
 }
