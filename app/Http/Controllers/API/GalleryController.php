@@ -30,7 +30,10 @@ class GalleryController extends BaseController
 
     // based on user
     public function buall () {
-      $galleries = getUserGalleries();
+      $user = auth('sanctum')->user();
+
+      if ($user) $galleries = getUserGalleries();
+      else $galleries = Gallery::all();
 
       return response()->json($galleries, 200);
     }
@@ -43,9 +46,12 @@ class GalleryController extends BaseController
 
     public function ball () {
       $gallery_ids = [];
-      $user_galleries = getUserGalleries();
+      $user = auth('sanctum')->user();
 
-      foreach ($user_galleries as $ugallery) {
+      if ($user) $galleries = getUserGalleries();
+      else $galleries = Gallery::all();
+
+      foreach ($galleries as $ugallery) {
         array_push($gallery_ids, $ugallery->id);
       }
 
@@ -62,9 +68,12 @@ class GalleryController extends BaseController
 
     public function parents () {
       $gallery_ids = [];
-      $user_galleries = getUserGalleries();
+      $user = auth('sanctum')->user();
 
-      foreach ($user_galleries as $ugallery) {
+      if ($user) $galleries = getUserGalleries();
+      else $galleries = Gallery::where('parent_id', null)->get();
+
+      foreach ($galleries as $ugallery) {
         array_push($gallery_ids, $ugallery->id);
       }
 

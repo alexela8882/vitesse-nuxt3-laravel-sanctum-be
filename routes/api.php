@@ -78,7 +78,7 @@ Route::controller(PermissionController::class)->group(function () {
 });
 
 Route::controller(CountryController::class)->group(function () {
-  Route::group(['prefix' => '/countries', 'middleware' => ['auth:sanctum']], function () {
+  Route::group(['prefix' => '/countries'], function () {
     Route::get('/', 'all');
   });
 });
@@ -102,7 +102,7 @@ Route::controller(UserInfoController::class)->group(function () {
 });
 
 Route::controller(GalleryController::class)->group(function () {
-  Route::group(['prefix' => '/galleries', 'middleware' => ['auth:sanctum']], function () {
+  Route::group(['prefix' => '/galleries'], function () {
     Route::get('/all-unpaginated', 'uall');
     Route::get('/all-unpaginated-bou', 'buall');
     Route::get('/', 'all');
@@ -121,41 +121,41 @@ Route::controller(GalleryController::class)->group(function () {
 });
 
 Route::controller(AlbumController::class)->group(function () {
-  Route::group(['prefix' => '/albums', 'middleware' => ['auth:sanctum']], function () {
+  Route::group(['prefix' => '/albums'], function () {
     Route::get('/get/{token}', 'get');
-    Route::post('/store/{token}', 'store');
-    Route::post('/update/{token}', 'update');
-    Route::delete('/delete/{token}', 'delete');
-    Route::post('/add-photo/{token}', 'addPhoto');
-    Route::post('/upload-photos/{token}', 'uploadPhotos');
     Route::get('/paginated-photos/{token}', 'pphotos');
-    Route::post('/empty/{token}', 'empty');
+    Route::post('/store/{token}', 'store')->middleware('auth:sanctum');
+    Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
+    Route::delete('/delete/{token}', 'delete')->middleware('auth:sanctum');
+    Route::post('/add-photo/{token}', 'addPhoto')->middleware('auth:sanctum');
+    Route::post('/upload-photos/{token}', 'uploadPhotos')->middleware('auth:sanctum');
+    Route::post('/empty/{token}', 'empty')->middleware('auth:sanctum');
     Route::get('/download-album/{token}', 'downloadAlbum');
   });
 });
 
 Route::controller(PhotoController::class)->group(function () {
-  Route::group(['prefix' => '/photos', 'middleware' => ['auth:sanctum']], function () {
-    Route::get('/get/{token}', 'get');
-    Route::post('/update/{token}', 'update');
-    Route::delete('/delete/{token}', 'delete');
+  Route::group(['prefix' => '/photos'], function () {
+    Route::get('/get/{token}', 'get')->middleware('auth:sanctum');
+    Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
+    Route::delete('/delete/{token}', 'delete')->middleware('auth:sanctum');
     Route::get('/download/{token}', 'download');
   });
 });
 
 Route::controller(TagController::class)->group(function () {
-  Route::group(['prefix' => '/tags', 'middleware' => ['auth:sanctum']], function () {
+  Route::group(['prefix' => '/tags'], function () {
     Route::get('/', 'all');
-    Route::get('/all-paginated', 'allp');
-    Route::get('/without-type', 'withoutType');
-    Route::put('/store', 'store');
-    Route::post('/update/{id}', 'update');
-    Route::delete('/delete/{id}', 'delete');
+    Route::get('/all-paginated', 'allp')->middleware('auth:sanctum');
+    Route::get('/without-type', 'withoutType')->middleware('auth:sanctum');
+    Route::put('/store', 'store')->middleware('auth:sanctum');
+    Route::post('/update/{id}', 'update')->middleware('auth:sanctum');
+    Route::delete('/delete/{id}', 'delete')->middleware('auth:sanctum');
   });
 });
 
 Route::controller(RegionController::class)->group(function () {
-  Route::group(['prefix' => '/regions', 'middleware' => ['auth:sanctum']], function () {
+  Route::group(['prefix' => '/regions'], function () {
     Route::get('/', 'all');
   });
 });

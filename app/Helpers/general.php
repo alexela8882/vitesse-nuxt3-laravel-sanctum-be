@@ -82,6 +82,9 @@ if (! function_exists('checkUserGalleryAccess')) {
   function checkUserGalleryAccess($galleryToken) {
     $_user = auth('sanctum')->user();
 
+    // if guest return true
+    if (!$_user) return 1;
+
     $user = User::where('id', $_user->id)
             ->with(['galleryaccessmaps' => function ($qry) {
               $qry->with('gallery');
