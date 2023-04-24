@@ -22,6 +22,13 @@ use Carbon\Carbon;
 
 class GalleryController extends BaseController
 {
+
+    public function puall () {
+      $galleries = Gallery::all();
+
+      return response()->json($galleries, 200);
+    }
+
     public function uall () {
       $gallery_ids = [];
       $user = auth('sanctum')->user();
@@ -44,7 +51,7 @@ class GalleryController extends BaseController
                   }])
                   ->get();
 
-      return response()->json($galleries, 200);
+      // return response()->json($galleries, 200);
       // $galleries = Gallery::with('tags')->get();
 
       return response()->json($galleries, 200);
@@ -55,7 +62,7 @@ class GalleryController extends BaseController
       $user = auth('sanctum')->user();
 
       if ($user) $galleries = getUserGalleries();
-      else $galleries = Gallery::all();
+      else $galleries = Gallery::with('subdomain')->get();
 
       return response()->json($galleries, 200);
     }
@@ -77,7 +84,7 @@ class GalleryController extends BaseController
         array_push($gallery_ids, $ugallery->id);
       }
 
-      $galleries = Gallery::whereIn('id', $gallery_ids)->paginate(10);
+      $galleries = Gallery::whereIn('id', $gallery_ids)->with('subdomain')->paginate(10);
 
       return response()->json($galleries, 200);
     }
@@ -151,6 +158,7 @@ class GalleryController extends BaseController
   
       $gallery = new Gallery;
       $gallery->name = $request->name;
+      $gallery->subdomain_id = $request->subdomain_id;
       $gallery->color = $request->color == '#000000' || $request->color == '#ffffff' ? null : $request->color;
       $gallery->second_color = $request->second_color == '#000000' || $request->second_color == '#ffffff' ? null : $request->second_color;
       $gallery->_token = generateRandomString();
@@ -187,6 +195,7 @@ class GalleryController extends BaseController
   
       // then update
       $gallery->name = $request->name;
+      $gallery->subdomain_id = $request->subdomain_id;
       $gallery->color = $request->color == '#000000' || $request->color == '#ffffff' ? null : $request->color;
       $gallery->second_color = $request->second_color == '#000000' || $request->second_color == '#ffffff' ? null : $request->second_color;
       $gallery->update();

@@ -17,6 +17,7 @@ use App\Http\Controllers\API\AlbumController;
 use App\Http\Controllers\API\PhotoController;
 use App\Http\Controllers\API\TagController;
 use App\Http\Controllers\API\RegionController;
+use App\Http\Controllers\API\SubdomainController;
 
 use App\Models\User;
 
@@ -107,6 +108,7 @@ Route::controller(UserInfoController::class)->group(function () {
 
 Route::controller(GalleryController::class)->group(function () {
   Route::group(['prefix' => '/galleries'], function () {
+    Route::get('/all-unpaginated-public', 'puall');
     Route::get('/all-unpaginated', 'uall');
     Route::get('/all-unpaginated-bou', 'buall');
     Route::get('/', 'all');
@@ -160,6 +162,12 @@ Route::controller(TagController::class)->group(function () {
 
 Route::controller(RegionController::class)->group(function () {
   Route::group(['prefix' => '/regions'], function () {
+    Route::get('/', 'all');
+  });
+});
+
+Route::controller(SubdomainController::class)->group(function () {
+  Route::group(['prefix' => '/subdomains'], function () {
     Route::get('/', 'all');
   });
 });
