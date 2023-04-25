@@ -112,7 +112,9 @@ if (! function_exists('getUserGalleries')) {
 
     $user = User::where('id', $_user->id)
             ->with(['galleryaccessmaps' => function ($qry) {
-              $qry->with('gallery');
+              $qry->with(['gallery' => function ($qry) {
+                $qry->with('subdomain');
+              }]);
             }])
             ->first();
 
@@ -124,11 +126,20 @@ if (! function_exists('getUserGalleries')) {
     $data = null;
 
     if ($_user->id == 1) {
-      $data = Gallery::all();
+      $data = Gallery::with('subdomain')->get();
     } else {
       $data = $galleries;
     }
 
     return $data;
+  }
+}
+
+if (! function_exists('getSubdomain')) {
+  function getSubdomain() {
+    $url = request()->getHost();
+    $arrUrl = explode('.', $url);
+    $subdomain = count($arrUrl) > 1 ? $arrUrl[0] : null;
+    return $subdomain;
   }
 }

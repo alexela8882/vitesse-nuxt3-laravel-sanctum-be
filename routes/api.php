@@ -17,6 +17,7 @@ use App\Http\Controllers\API\AlbumController;
 use App\Http\Controllers\API\PhotoController;
 use App\Http\Controllers\API\TagController;
 use App\Http\Controllers\API\RegionController;
+use App\Http\Controllers\API\SubdomainController;
 
 use App\Models\User;
 
@@ -30,6 +31,10 @@ use App\Models\User;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::get('/getsubdomain', function () {
+  return getSubdomain();
+});
 
 Route::controller(AuthController::class)->group(function(){
   Route::post('register', 'register');
@@ -103,6 +108,7 @@ Route::controller(UserInfoController::class)->group(function () {
 
 Route::controller(GalleryController::class)->group(function () {
   Route::group(['prefix' => '/galleries'], function () {
+    Route::get('/all-unpaginated-public', 'puall');
     Route::get('/all-unpaginated', 'uall');
     Route::get('/all-unpaginated-bou', 'buall');
     Route::get('/', 'all');
@@ -113,10 +119,10 @@ Route::controller(GalleryController::class)->group(function () {
     Route::get('/lists-parent/{token}', 'allParents');
     Route::get('/parents', 'parents');
     Route::get('/get/{token}', 'get');
-    Route::put('/store', 'store');
-    Route::post('/update/{token}', 'update');
-    Route::post('/sync/{token}', 'sync');
-    Route::delete('/delete/{token}', 'delete');
+    Route::put('/store', 'store')->middleware('auth:sanctum');
+    Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
+    Route::post('/sync/{token}', 'sync')->middleware('auth:sanctum');
+    Route::delete('/delete/{token}', 'delete')->middleware('auth:sanctum');
   });
 });
 
@@ -157,5 +163,15 @@ Route::controller(TagController::class)->group(function () {
 Route::controller(RegionController::class)->group(function () {
   Route::group(['prefix' => '/regions'], function () {
     Route::get('/', 'all');
+  });
+});
+
+Route::controller(SubdomainController::class)->group(function () {
+  Route::group(['prefix' => '/subdomains'], function () {
+    Route::get('/', 'all');
+    Route::get('/all-paginated', 'allPaginated')->middleware('auth:sanctum');
+    Route::put('/store', 'store')->middleware('auth:sanctum');
+    Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
+    Route::delete('/delete/{token}', 'delete')->middleware('auth:sanctum');
   });
 });
