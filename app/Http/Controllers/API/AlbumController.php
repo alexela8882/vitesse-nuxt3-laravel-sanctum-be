@@ -79,7 +79,7 @@ class AlbumController extends BaseController
     }
 
     public function store ($token, Request $request) {
-      $req_photos = json_decode($request->photos);
+      // $req_photos = json_decode($request->photos);
       // $req_images = json_decode($request->images_array);
       $req_subgalleries = json_decode($request->subgalleries);
       $req_subgallerytags = json_decode($request->subgallerytags);
@@ -129,65 +129,65 @@ class AlbumController extends BaseController
       $album->save();
 
       // upload images
-      foreach ($request->images_array as $iindex => $req_image) {
-        // add photos to database
-        foreach ($req_photos as $pindex => $req_photo) {
-          if ($iindex == $pindex) {
-            $photo = new Photo;
-            $photo->user_id = $user->id;
-            $photo->album_id = $album->id;
-            $photo->file_name = $req_photo->file_name;
-            $photo->file_size = $req_photo->file_size;
-            $photo->file_type = $req_photo->file_type;
-            $photo->description = $req_photo->country_id;
-            $photo->country_id = $req_photo->country_id;
-            $photo->event_date = $req_photo->event_date;
-            $photo->file_extension = $req_image->getClientOriginalExtension();
-            $photo->description = ($req_photo->description && $req_photo->description !== "null") ? $req_photo->description : null;
-            $photo->_token = generateRandomString();
-            $photo->save();
+      // foreach ($request->images_array as $iindex => $req_image) {
+      //   // add photos to database
+      //   foreach ($req_photos as $pindex => $req_photo) {
+      //     if ($iindex == $pindex) {
+      //       $photo = new Photo;
+      //       $photo->user_id = $user->id;
+      //       $photo->album_id = $album->id;
+      //       $photo->file_name = $req_photo->file_name;
+      //       $photo->file_size = $req_photo->file_size;
+      //       $photo->file_type = $req_photo->file_type;
+      //       $photo->description = $req_photo->country_id;
+      //       $photo->country_id = $req_photo->country_id;
+      //       $photo->event_date = $req_photo->event_date;
+      //       $photo->file_extension = $req_image->getClientOriginalExtension();
+      //       $photo->description = ($req_photo->description && $req_photo->description !== "null") ? $req_photo->description : null;
+      //       $photo->_token = generateRandomString();
+      //       $photo->save();
 
-            // delete current maps first
-            GPMap::where('photo_id', $photo->id)->delete();
+      //       // delete current maps first
+      //       GPMap::where('photo_id', $photo->id)->delete();
 
-            // save sub-galleries as tag
-            if (count($req_photo->galleries) > 0) {
-              foreach ($req_photo->galleries as $gallery) {
-                $gpmap = new GPMap;
-                $gpmap->gallery_id = $gallery->id;
-                $gpmap->photo_id = $photo->id;
-                $gpmap->save();
+      //       // save sub-galleries as tag
+      //       if (count($req_photo->galleries) > 0) {
+      //         foreach ($req_photo->galleries as $gallery) {
+      //           $gpmap = new GPMap;
+      //           $gpmap->gallery_id = $gallery->id;
+      //           $gpmap->photo_id = $photo->id;
+      //           $gpmap->save();
 
-                // also save parent gallery as tag
-                if ($gallery->parent_id) {
-                  $gpmap = new GPMap;
-                  $gpmap->gallery_id = $gallery->parent_id;
-                  $gpmap->photo_id = $photo->id;
-                  $gpmap->save();
-                }
-              }
-            }
+      //           // also save parent gallery as tag
+      //           if ($gallery->parent_id) {
+      //             $gpmap = new GPMap;
+      //             $gpmap->gallery_id = $gallery->parent_id;
+      //             $gpmap->photo_id = $photo->id;
+      //             $gpmap->save();
+      //           }
+      //         }
+      //       }
 
-            // collect all tags from photo tags and gallery tags
-            $allTags = [];
-            foreach ($req_photo->tags as $tag) array_push($allTags, $tag);
-            foreach ($req_photo->gallerytags as $gallerytag) array_push($allTags, $gallerytag);
+      //       // collect all tags from photo tags and gallery tags
+      //       $allTags = [];
+      //       foreach ($req_photo->tags as $tag) array_push($allTags, $tag);
+      //       foreach ($req_photo->gallerytags as $gallerytag) array_push($allTags, $gallerytag);
 
-            // sync tags
-            $photo->syncTags([]); // reset first
-            foreach ($allTags as $allTag) $photo->attachTag($allTag->name->en, $allTag->type);
+      //       // sync tags
+      //       $photo->syncTags([]); // reset first
+      //       foreach ($allTags as $allTag) $photo->attachTag($allTag->name->en, $allTag->type);
 
-            // generate file for uploading
-            $file_location = 'images/'.$album->_token;
-            $file = $photo->_token . '.' . $photo->file_extension;
-          }
-        }
-        // upload images
-        $req_image->move(public_path($file_location), $file);
+      //       // generate file for uploading
+      //       $file_location = 'images/'.$album->_token;
+      //       $file = $photo->_token . '.' . $photo->file_extension;
+      //     }
+      //   }
+      //   // upload images
+      //   $req_image->move(public_path($file_location), $file);
 
-        // generate thumbnails
-        generateThumbnail($album, $photo);
-      }
+      //   // generate thumbnails
+      //   generateThumbnail($album, $photo);
+      // }
 
       // upload image
       // $file_location = 'images/'.$album->_token;
@@ -364,68 +364,75 @@ class AlbumController extends BaseController
     }
 
     public function uploadPhotos ($token, Request $request) {
-      $req_photos = json_decode($request->photos);
+      $req_photo = json_decode($request->photo);
 
       $user = auth('sanctum')->user();
-      $gallery = Gallery::where('_token', $token)->first();
 
       $album = Album::where('_token', $token)->first();
 
       // upload images
       foreach ($request->images_array as $iindex => $req_image) {
-        // add photos to database
-        foreach ($req_photos as $pindex => $req_photo) {
-          if ($iindex == $pindex) {
-            $photo = new Photo;
-            $photo->user_id = $user->id;
-            $photo->album_id = $album->id;
-            $photo->file_name = $req_photo->file_name;
-            $photo->file_size = $req_photo->file_size;
-            $photo->file_type = $req_photo->file_type;
-            $photo->description = $req_photo->country_id;
-            $photo->country_id = $req_photo->country_id;
-            $photo->event_date = $req_photo->event_date;
-            $photo->file_extension = $req_image->getClientOriginalExtension();
-            $photo->description = ($req_photo->description && $req_photo->description !== "null") ? $req_photo->description : null;
-            $photo->_token = generateRandomString();
-            $photo->save();
+        // add photo to database
+        $photo = new Photo;
+        $photo->user_id = $user->id;
+        $photo->album_id = $album->id;
+        $photo->file_name = $req_photo->file_name;
+        $photo->file_size = $req_photo->file_size;
+        $photo->file_type = $req_photo->file_type;
+        $photo->description = $req_photo->country_id;
+        $photo->country_id = $req_photo->country_id;
+        $photo->event_date = $req_photo->event_date;
+        $photo->file_extension = $req_image->getClientOriginalExtension();
+        $photo->description = ($req_photo->description && $req_photo->description !== "null") ? $req_photo->description : null;
+        $photo->_token = generateRandomString();
+        $photo->save();
 
-            // delete current maps first
-            GPMap::where('photo_id', $photo->id)->delete();
+        // delete current maps first
+        GPMap::where('photo_id', $photo->id)->delete();
 
-            // save sub-galleries as tag
-            if (count($req_photo->galleries) > 0) {
-              foreach ($req_photo->galleries as $gallery) {
-                $gpmap = new GPMap;
-                $gpmap->gallery_id = $gallery->id;
-                $gpmap->photo_id = $photo->id;
-                $gpmap->save();
+        // collection parent ids
+        $parentGalleryIds = [];
 
-                // also save parent gallery as tag
-                if ($gallery->parent_id) {
-                  $gpmap = new GPMap;
-                  $gpmap->gallery_id = $gallery->parent_id;
-                  $gpmap->photo_id = $photo->id;
-                  $gpmap->save();
-                }
+        // save sub-galleries as tag
+        if (count($req_photo->galleries) > 0) {
+          foreach ($req_photo->galleries as $gallery) {
+            $gpmap = new GPMap;
+            $gpmap->gallery_id = $gallery->id;
+            $gpmap->photo_id = $photo->id;
+            $gpmap->save();
+
+            // also save parent gallery as tag
+            if ($gallery->parent_id) {
+              // prevent duplicate ids
+              if (!in_array($gallery->parent_id, $parentGalleryIds)) {
+                array_push($parentGalleryIds, $gallery->parent_id);
               }
             }
-
-            // collect all tags from photo tags and gallery tags
-            $allTags = [];
-            foreach ($req_photo->tags as $tag) array_push($allTags, $tag);
-            foreach ($req_photo->gallerytags as $gallerytag) array_push($allTags, $gallerytag);
-
-            // sync tags
-            $photo->syncTags([]); // reset first
-            foreach ($allTags as $allTag) $photo->attachTag($allTag->name->en, $allTag->type);
-
-            // generate file for uploading
-            $file_location = 'images/'.$album->_token;
-            $file = $photo->_token . '.' . $photo->file_extension;
           }
         }
-        // upload images
+
+        // store unique parent ids
+        foreach ($parentGalleryIds as $parentgalleryid) {
+          $gpmap = new GPMap;
+          $gpmap->gallery_id = $parentgalleryid;
+          $gpmap->photo_id = $photo->id;
+          $gpmap->save();
+        }
+
+        // collect all tags from photo tags and gallery tags
+        $allTags = [];
+        foreach ($req_photo->tags as $tag) array_push($allTags, $tag);
+        foreach ($req_photo->gallerytags as $gallerytag) array_push($allTags, $gallerytag);
+
+        // sync tags
+        $photo->syncTags([]); // reset first
+        foreach ($allTags as $allTag) $photo->attachTag($allTag->name->en, $allTag->type);
+
+        // generate file for uploading
+        $file_location = 'images/'.$album->_token;
+        $file = $photo->_token . '.' . $photo->file_extension;
+
+        // upload image
         $req_image->move(public_path($file_location), $file);
 
         // generate thumbnails
@@ -464,11 +471,18 @@ class AlbumController extends BaseController
       // store album
       $_album = $album;
 
-      // delete photos
-      Photo::where('album_id', $album->id)->delete();
+      // get photos
+      $photos = Photo::where('album_id', $album->id)->get();
 
       // delete gallery maps
+      // album maps
       GAMap::where('album_id', $album->id)->delete();
+      // photo maps
+      foreach ($photos as $photo) {
+        GPMap::where('photo_id', $photo->id)->delete();
+        // delete photo
+        $photo->delete();
+      }
 
       // delete album
       $album->delete();
