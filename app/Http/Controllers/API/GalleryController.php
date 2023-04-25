@@ -24,7 +24,7 @@ class GalleryController extends BaseController
 {
 
     public function puall () {
-      $galleries = Gallery::all();
+      $galleries = Gallery::with('tags')->get();
 
       return response()->json($galleries, 200);
     }
