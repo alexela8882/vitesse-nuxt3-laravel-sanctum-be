@@ -15,7 +15,7 @@ class CreateSubdomainsTable extends Migration
     {
         Schema::create('subdomains', function (Blueprint $table) {
           $table->id();
-          $table->string('name')->unique();
+          $table->string('name');
           $table->string('_token');
           $table->timestamps();
         });

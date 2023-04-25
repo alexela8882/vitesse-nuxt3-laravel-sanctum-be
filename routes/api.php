@@ -169,5 +169,9 @@ Route::controller(RegionController::class)->group(function () {
 Route::controller(SubdomainController::class)->group(function () {
   Route::group(['prefix' => '/subdomains'], function () {
     Route::get('/', 'all');
+    Route::get('/all-paginated', 'allPaginated')->middleware('auth:sanctum');
+    Route::put('/store', 'store')->middleware('auth:sanctum');
+    Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
+    Route::delete('/delete/{token}', 'delete')->middleware('auth:sanctum');
   });
 });
