@@ -199,9 +199,12 @@ class GalleryController extends BaseController
       $gallery->color = $request->color == '#000000' || $request->color == '#ffffff' ? null : $request->color;
       $gallery->second_color = $request->second_color == '#000000' || $request->second_color == '#ffffff' ? null : $request->second_color;
       $gallery->update();
+
+      // gallery with subdomain
+      $_gallery = Gallery::where('_token', $token)->with('subdomain')->first();
   
       $response = [
-        'data' => $gallery,
+        'data' => $_gallery,
         'message' => 'Gallery "' . $request->name . '" has been successfully updated.'
       ];
   
