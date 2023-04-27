@@ -442,8 +442,8 @@ class GalleryController extends BaseController
                 ->where(function ($qry) use ($request, $dateFrom, $dateTo) {
                   // date filter
                   if ($request->filter['year']) {
-                    $qry->whereYear('date_from', $request->filter['year'])
-                        ->orWhereYear('date_to', $request->filter['year']);
+                    $qry->whereYear('date_from', Carbon::parse($request->filter['year'])->addDay()->format('Y'))
+                        ->orWhereYear('date_to', Carbon::parse($request->filter['year'])->addDay()->format('Y'));
                   } else if(count($request->filter['dates'])) {
                     // $qry->whereIn(\DB::raw("DATE(event_date)"), $request->filter['dates']);
                     // foreach ($request->filter['dates'] as $date) {
@@ -527,7 +527,7 @@ class GalleryController extends BaseController
                 ->where(function ($qry) use ($request, $dateFrom, $dateTo) {
                   // date filter
                   if ($request->filter['year']) {
-                    $qry->whereYear('event_date', $request->filter['year']);
+                    $qry->whereYear('event_date', Carbon::parse($request->filter['year'])->addDay()->format('Y'));
                   } else if(count($request->filter['dates'])) {
                       $qry->whereIn(\DB::raw("DATE(event_date)"), $request->filter['dates']);
                   } else if ($dateFrom) {
