@@ -81,6 +81,7 @@ class AlbumController extends BaseController
     public function store ($token, Request $request) {
       // $req_photos = json_decode($request->photos);
       // $req_images = json_decode($request->images_array);
+      $req_country = json_decode($request->country);
       $req_date_range = json_decode($request->date_range);
       $req_subgalleries = json_decode($request->subgalleries);
       $req_subgallerytags = json_decode($request->subgallerytags);
@@ -88,7 +89,7 @@ class AlbumController extends BaseController
 
       $rules = [
         'title' => 'required|unique:albums,title',
-        'country_id' => 'required',
+        'country' => 'required',
         'venue' => 'required',
         'date_range' => 'required',
         // 'description' => 'required',
@@ -98,7 +99,7 @@ class AlbumController extends BaseController
       $message = [
         'title.required' => 'This field is required.',
         'title.unique' => 'Ttitle already taken. Please choose another title.',
-        'country_id.required' => 'This field is required.',
+        'country.required' => 'This field is required.',
         'venue.required' => 'This field is required.',
         'date_range.required' => 'This field is required.',
         // 'description.required' => 'This field is required.',
@@ -118,7 +119,7 @@ class AlbumController extends BaseController
       $album->user_id = $user->id;
       $album->title = $request->title;
       $album->description = ($request->description && $request->description !== "null") ? $request->description : null;
-      $album->country_id = $request->country_id;
+      $album->country_id = $req_country->id;
       $album->venue = $request->venue;
       $album->event_date = Carbon::parse($req_date_range[0])->addDay()->format('Y-m-d h:i:s');
       $album->date_from = Carbon::parse($req_date_range[0])->addDay()->format('Y-m-d h:i:s');
