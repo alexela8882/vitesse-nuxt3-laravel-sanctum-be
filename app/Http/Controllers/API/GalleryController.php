@@ -24,7 +24,15 @@ class GalleryController extends BaseController
 {
 
     public function puall () {
-      $galleries = Gallery::with('tags')->get();
+      $galleries = Gallery::with('tags')
+                   ->with(['albummaps' => function ($qry) {
+                    $qry->with(['album' => function ($qry) {
+                      $qry->with('country');
+                      $qry->with('photos');
+                    }]);
+                   }])
+                   ->with('subgalleries')
+                   ->get();
 
       return response()->json($galleries, 200);
     }
@@ -131,6 +139,7 @@ class GalleryController extends BaseController
       $gallery = Gallery::where('_token', $token)
               ->select('id', 'parent_id', '_token', 'name')
               ->with('tags')
+              ->with('subgalleries')
               ->first();
 
       $subgalleries = Gallery::where('parent_id', $gallery->id)->with('tags')->get();
