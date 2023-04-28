@@ -24,6 +24,7 @@ class PhotoController extends BaseController
                   $qry->with('tags');
                 }]);
               }])
+              ->with('country')
               ->with('tags')
               ->first();
 
@@ -72,8 +73,8 @@ class PhotoController extends BaseController
       // update some details
       $photo->file_name = $request->file_name;
       if ($request->description !== '') $photo->description = $request->description;
-      $photo->country_id = $request->country_id ? $request->country_id : null;
-      $photo->event_date = $request->event_date ? Carbon::parse($request->event_date)->format('Y-m-d') : null;
+      $photo->country_id = $request->country['id'] ? $request->country['id'] : null;
+      $photo->event_date = $request->event_date ? Carbon::parse($request->event_date)->addDay()->format('Y-m-d') : null;
       $photo->update();
 
       // delete current maps first
