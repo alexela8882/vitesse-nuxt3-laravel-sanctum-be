@@ -15,7 +15,16 @@ return [
 
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
         '%s%s',
-        'localhost,localhost:4000,localhost:3000,127.0.0.1,127.0.0.1:8000,::1,https://backend.escophotos.com,https://frontend.escophotos.com',
+        'localhost,localhost:4000,
+        localhost:3000,
+        127.0.0.1,
+        127.0.0.1:8000,
+        ::1,
+        https://backend.escophotos.com,
+        https://frontend.escophotos.com,
+        https://evxventures.escophotos.com,
+        https://escoaster.escophotos.com,
+        https://escolifesciences.escophotos.com',
         env('APP_URL') ? ','.parse_url(env('APP_URL'), PHP_URL_HOST) : ''
     ))),
 
