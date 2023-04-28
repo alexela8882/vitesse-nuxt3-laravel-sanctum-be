@@ -17,4 +17,8 @@ class Gallery extends Model
     public function subdomain () {
       return $this->belongsTo(Subdomain::class);
     }
+
+    public function subgalleries () {
+      return $this->hasMany(Gallery::class, 'parent_id', 'id');
+    }
 }
