@@ -21,4 +21,8 @@ class Gallery extends Model
     public function subgalleries () {
       return $this->hasMany(Gallery::class, 'parent_id', 'id');
     }
+
+    public function parent () {
+      return $this->belongsTo(Gallery::class, 'parent_id', 'id');
+    }
 }

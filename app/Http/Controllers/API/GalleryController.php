@@ -11,6 +11,7 @@ use App\Models\Album;
 use App\Models\Photo;
 use App\Models\Region;
 use App\Models\Gallery;
+use App\Models\Subdomain;
 use App\Models\GalleryAlbumMap as GAMap;
 use App\Models\GalleryAccessMap as GUAMap;
 use App\Models\GalleryPhotoMap as GPMap;
@@ -24,7 +25,13 @@ class GalleryController extends BaseController
 {
 
     public function puall () {
+      $refSubdomain = getRefererSubdomain();
+      $subdomain = Subdomain::where('name', $refSubdomain)->first();
+
       $galleries = Gallery::with('tags')
+                   ->where(function ($qry) use ($refSubdomain, $subdomain) {
+                      if ($refSubdomain !== 'frontend') $qry->where('subdomain_id', $subdomain->id);
+                   })
                    ->with(['albummaps' => function ($qry) {
                     $qry->with(['album' => function ($qry) {
                       $qry->with('country');
@@ -32,7 +39,43 @@ class GalleryController extends BaseController
                     }]);
                    }])
                    ->with('subgalleries')
+                   ->with('subdomain')
                    ->get();
+
+      return response()->json($galleries, 200);
+    }
+
+    public function psuall () {
+      $refSubdomain = getRefererSubdomain();
+      $subdomain = Subdomain::where('name', $refSubdomain)->first();
+
+      $gallery_ids = [];
+      $user = auth('sanctum')->user();
+
+      if ($user) $galleries = getUserGalleries();
+      else $galleries = Gallery::all();
+
+      foreach ($galleries as $ugallery) {
+        array_push($gallery_ids, $ugallery->id);
+      }
+
+      $galleries = Gallery::whereIn('id', $gallery_ids)
+                  ->where(function ($qry) use ($refSubdomain, $subdomain) {
+                      if ($refSubdomain !== 'frontend') $qry->where('subdomain_id', $subdomain->id);
+                  })
+                  ->with(['albummaps' => function ($qry) {
+                    $qry->orderBy('album_id', 'desc')
+                        ->with(['album' => function ($qry) {
+                          $qry->with('country')
+                              ->with('tags')
+                              ->with('photos');
+                        }]);
+                  }])
+                  ->with('subdomain')
+                  ->get();
+
+      // return response()->json($galleries, 200);
+      // $galleries = Gallery::with('tags')->get();
 
       return response()->json($galleries, 200);
     }
@@ -140,6 +183,7 @@ class GalleryController extends BaseController
               ->select('id', 'parent_id', '_token', 'name')
               ->with('tags')
               ->with('subgalleries')
+              ->with('parent')
               ->first();
 
       $subgalleries = Gallery::where('parent_id', $gallery->id)->with('tags')->get();
@@ -152,6 +196,20 @@ class GalleryController extends BaseController
       // check user access first
       $check = checkUserGalleryAccess($token);
       if ($check == 0) return response()->json('unauthorized', 403);
+
+      $gallery = $this->generalGet($token);
+  
+      return response()->json($gallery);
+    }
+
+    public function deepGet ($token) {
+      // check user access first
+      $check = checkUserGalleryAccess($token);
+      if ($check == 0) return response()->json('unauthorized', 403);
+
+      // check user if they also have access to gallery album
+      $check2 = checkUserGalleryAlbumAccess($token);
+      if ($check2 == 0) return response()->json('unauthorized', 403);
 
       $gallery = $this->generalGet($token);
   

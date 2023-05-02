@@ -33,7 +33,7 @@ use App\Models\User;
 */
 
 Route::get('/getsubdomain', function () {
-  return getSubdomain();
+  return getRefererSubdomain();
 });
 
 Route::controller(AuthController::class)->group(function(){
@@ -109,6 +109,7 @@ Route::controller(UserInfoController::class)->group(function () {
 Route::controller(GalleryController::class)->group(function () {
   Route::group(['prefix' => '/galleries'], function () {
     Route::get('/all-unpaginated-public', 'puall');
+    Route::get('/all-unpaginated-persub', 'psuall');
     Route::get('/all-unpaginated', 'uall');
     Route::get('/all-unpaginated-bou', 'buall');
     Route::get('/', 'all');
@@ -119,6 +120,7 @@ Route::controller(GalleryController::class)->group(function () {
     Route::get('/lists-parent/{token}', 'allParents');
     Route::get('/parents', 'parents');
     Route::get('/get/{token}', 'get');
+    Route::get('/deep-get/{token}', 'deepGet');
     Route::put('/store', 'store')->middleware('auth:sanctum');
     Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
     Route::post('/sync/{token}', 'sync')->middleware('auth:sanctum');

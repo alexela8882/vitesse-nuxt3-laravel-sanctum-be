@@ -94,6 +94,39 @@ if (! function_exists('checkUserGalleryAccess')) {
     $gallery_tokens = [];
     foreach ($user->galleryaccessmaps as $map) {
       array_push($gallery_tokens, $map->gallery->_token);
+
+      // push parent token for subgallery access
+      if (!in_array($map->gallery->parent['_token'], $gallery_tokens)) {
+        array_push($gallery_tokens, $map->gallery->parent['_token']);
+      }
+    }
+
+    // check if user have access
+    if ($_user->id == 1) {
+      return 1;
+    } else {
+      if (!in_array($galleryToken, $gallery_tokens)) return 0;
+      else return 1;
+    }
+  }
+}
+
+if (! function_exists('checkUserGalleryAlbumAccess')) {
+  function checkUserGalleryAlbumAccess($galleryToken) {
+    $_user = auth('sanctum')->user();
+
+    // if guest return true
+    if (!$_user) return 1;
+
+    $user = User::where('id', $_user->id)
+            ->with(['galleryaccessmaps' => function ($qry) {
+              $qry->with('gallery');
+            }])
+            ->first();
+
+    $gallery_tokens = [];
+    foreach ($user->galleryaccessmaps as $map) {
+      array_push($gallery_tokens, $map->gallery->_token);
     }
 
     // check if user have access
@@ -121,6 +154,13 @@ if (! function_exists('getUserGalleries')) {
     $galleries = [];
     foreach ($user->galleryaccessmaps as $map) {
       array_push($galleries, $map->gallery);
+
+      // push parent token for subgallery access
+      // if ($map->gallery->parent) {
+      //   if (!in_array($map->gallery->parent, $galleries)) {
+      //     array_push($galleries, $map->gallery->parent);
+      //   }
+      // }
     }
 
     $data = null;
@@ -137,9 +177,19 @@ if (! function_exists('getUserGalleries')) {
 
 if (! function_exists('getSubdomain')) {
   function getSubdomain() {
-    $url = request()->getHost();
+    $url = request()->getHost(); // get current backend url
+    // $url request()->headers->get('referer'); // get referer url
     $arrUrl = explode('.', $url);
-    $subdomain = count($arrUrl) > 1 ? $arrUrl[0] : null;
+    $subdomain = count($arrUrl) > 1 ? explode('//', $arrUrl[0])[1] : null;
+    return $subdomain;
+  }
+}
+
+if (! function_exists('getRefererSubdomain')) {
+  function getRefererSubdomain() {
+    $url = request()->headers->get('referer');
+    $arrUrl = explode('.', $url);
+    $subdomain = count($arrUrl) > 1 ? explode('//', $arrUrl[0])[1] : null;
     return $subdomain;
   }
 }

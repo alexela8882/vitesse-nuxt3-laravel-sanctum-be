@@ -61,6 +61,7 @@ class UserController extends BaseController
   public function authUser (Request $request) {
     $user = auth('sanctum')->user();
     $user->roles;
+    $user->galleryaccessmaps;
 
     return response()->json($user, 200);
   }
