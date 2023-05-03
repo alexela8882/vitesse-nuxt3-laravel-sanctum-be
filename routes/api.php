@@ -135,9 +135,9 @@ Route::controller(AlbumController::class)->group(function () {
     Route::post('/store/{token}', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add album']);
     Route::post('/update/{token}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit album']);
     Route::delete('/delete/{token}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete album']);
-    Route::post('/add-photo/{token}', 'addPhoto')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo']);
-    Route::post('/upload-photos/{token}', 'uploadPhotos')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo']);
-    Route::post('/empty/{token}', 'empty')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete album']);
+    Route::post('/add-photo/{token}', 'addPhoto')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo|add album|edit album']);
+    Route::post('/upload-photos/{token}', 'uploadPhotos')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo|add album|edit album']);
+    Route::post('/empty/{token}', 'empty')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete photo']);
     Route::get('/download-album/{token}', 'downloadAlbum');
   });
 });
@@ -155,7 +155,7 @@ Route::controller(TagController::class)->group(function () {
   Route::group(['prefix' => '/tags'], function () {
     Route::get('/', 'all');
     Route::get('/all-paginated', 'allp')->middleware(['auth:sanctum'])->middleware(['nd_permission:view tag']);
-    Route::get('/without-type', 'withoutType')->middleware(['auth:sanctum'])->middleware(['nd_permission:view tag']);
+    Route::get('/without-type', 'withoutType')->middleware(['auth:sanctum']);
     Route::put('/store', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add tag']);
     Route::post('/update/{id}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit tag']);
     Route::delete('/delete/{id}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete tag']);
