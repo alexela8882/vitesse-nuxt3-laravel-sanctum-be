@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
         // $this->call(RegionCountrySeeder::class);
         // $this->call(CompanyPositionSeeder::class);
         // $this->call(InitialPermissionSeeder::class);
-        $this->call(SubdomainSeeder::class);
+        // $this->call(SubdomainSeeder::class);
+        $this->call(AdditionalPermissionSeeder::class);
     }
 }

@@ -56,7 +56,7 @@ Route::controller(UserController::class)->group(function () {
     Route::get('/get/{token}', 'get')->middleware(['nd_permission:view user']);
     Route::put('/store', 'store')->middleware(['nd_permission:add user']);
     Route::post('/update/{token}', 'update')->middleware(['nd_permission:edit user']);
-    Route::post('/update-access/{token}', 'updateAccess');
+    Route::post('/update-access/{token}', 'updateAccess')->middleware(['nd_permission:edit user']);
     Route::delete('/delete/{token}', 'delete')->middleware(['nd_permission:delete user']);
   });
 });
@@ -112,8 +112,8 @@ Route::controller(GalleryController::class)->group(function () {
     Route::get('/all-unpaginated-persub', 'psuall');
     Route::get('/all-unpaginated', 'uall');
     Route::get('/all-unpaginated-bou', 'buall');
-    Route::get('/', 'all');
-    Route::get('/all-paginated-bou', 'ball');
+    Route::get('/', 'all')->middleware(['nd_permission:view gallery|add gallery|edit gallery|delete gallery']);
+    Route::get('/all-paginated-bou', 'ball')->middleware(['auth:sanctum'])->middleware(['nd_permission:view gallery']);
     Route::get('/albums/{token}', 'albums');
     Route::post('/filtered-albums/{token}', 'filteredAlbums');
     Route::get('/lists-e/{token}', 'listsE');
@@ -121,10 +121,10 @@ Route::controller(GalleryController::class)->group(function () {
     Route::get('/parents', 'parents');
     Route::get('/get/{token}', 'get');
     Route::get('/deep-get/{token}', 'deepGet');
-    Route::put('/store', 'store')->middleware('auth:sanctum');
-    Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
-    Route::post('/sync/{token}', 'sync')->middleware('auth:sanctum');
-    Route::delete('/delete/{token}', 'delete')->middleware('auth:sanctum');
+    Route::put('/store', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add gallery']);
+    Route::post('/update/{token}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit gallery']);
+    Route::post('/sync/{token}', 'sync')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit gallery']);
+    Route::delete('/delete/{token}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete gallery']);
   });
 });
 
@@ -132,12 +132,12 @@ Route::controller(AlbumController::class)->group(function () {
   Route::group(['prefix' => '/albums'], function () {
     Route::get('/get/{token}', 'get');
     Route::get('/paginated-photos/{token}', 'pphotos');
-    Route::post('/store/{token}', 'store')->middleware('auth:sanctum');
-    Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
-    Route::delete('/delete/{token}', 'delete')->middleware('auth:sanctum');
-    Route::post('/add-photo/{token}', 'addPhoto')->middleware('auth:sanctum');
-    Route::post('/upload-photos/{token}', 'uploadPhotos')->middleware('auth:sanctum');
-    Route::post('/empty/{token}', 'empty')->middleware('auth:sanctum');
+    Route::post('/store/{token}', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add album']);
+    Route::post('/update/{token}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit album']);
+    Route::delete('/delete/{token}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete album']);
+    Route::post('/add-photo/{token}', 'addPhoto')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo']);
+    Route::post('/upload-photos/{token}', 'uploadPhotos')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo']);
+    Route::post('/empty/{token}', 'empty')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete album']);
     Route::get('/download-album/{token}', 'downloadAlbum');
   });
 });
@@ -145,8 +145,8 @@ Route::controller(AlbumController::class)->group(function () {
 Route::controller(PhotoController::class)->group(function () {
   Route::group(['prefix' => '/photos'], function () {
     Route::get('/get/{token}', 'get')->middleware('auth:sanctum');
-    Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
-    Route::delete('/delete/{token}', 'delete')->middleware('auth:sanctum');
+    Route::post('/update/{token}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit photo']);
+    Route::delete('/delete/{token}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete photo']);
     Route::get('/download/{token}', 'download');
   });
 });
@@ -154,11 +154,11 @@ Route::controller(PhotoController::class)->group(function () {
 Route::controller(TagController::class)->group(function () {
   Route::group(['prefix' => '/tags'], function () {
     Route::get('/', 'all');
-    Route::get('/all-paginated', 'allp')->middleware('auth:sanctum');
-    Route::get('/without-type', 'withoutType')->middleware('auth:sanctum');
-    Route::put('/store', 'store')->middleware('auth:sanctum');
-    Route::post('/update/{id}', 'update')->middleware('auth:sanctum');
-    Route::delete('/delete/{id}', 'delete')->middleware('auth:sanctum');
+    Route::get('/all-paginated', 'allp')->middleware(['auth:sanctum'])->middleware(['nd_permission:view tag']);
+    Route::get('/without-type', 'withoutType')->middleware(['auth:sanctum'])->middleware(['nd_permission:view tag']);
+    Route::put('/store', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add tag']);
+    Route::post('/update/{id}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit tag']);
+    Route::delete('/delete/{id}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete tag']);
   });
 });
 
@@ -170,10 +170,10 @@ Route::controller(RegionController::class)->group(function () {
 
 Route::controller(SubdomainController::class)->group(function () {
   Route::group(['prefix' => '/subdomains'], function () {
-    Route::get('/', 'all');
-    Route::get('/all-paginated', 'allPaginated')->middleware('auth:sanctum');
-    Route::put('/store', 'store')->middleware('auth:sanctum');
-    Route::post('/update/{token}', 'update')->middleware('auth:sanctum');
-    Route::delete('/delete/{token}', 'delete')->middleware('auth:sanctum');
+    Route::get('/', 'all')->middleware('auth:sanctum')->middleware(['nd_permission:view subdomain|view gallery|add gallery|edit gallery|delete gallery']);
+    Route::get('/all-paginated', 'allPaginated')->middleware('auth:sanctum')->middleware(['nd_permission:view subdomain']);
+    Route::put('/store', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add subdomain']);
+    Route::post('/update/{token}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit subdomain']);
+    Route::delete('/delete/{token}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete subdomain']);
   });
 });
