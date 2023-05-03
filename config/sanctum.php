@@ -17,6 +17,7 @@ return [
         '%s%s',
         'localhost,localhost:4000,
         localhost:3000,
+        http://*.escophotos.es,
         127.0.0.1,
         127.0.0.1:8000,
         ::1,

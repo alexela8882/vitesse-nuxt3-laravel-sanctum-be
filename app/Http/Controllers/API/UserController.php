@@ -8,6 +8,8 @@ use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\User;
 use App\Models\UserInfo;
 use App\Models\Gallery;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use App\Models\GalleryAccessMap as GACMap;
 
 use Validator;
@@ -59,8 +61,22 @@ class UserController extends BaseController
   }
 
   public function authUser (Request $request) {
-    $user = \Auth::user();
-    //$user->roles;
+    $_user = auth('sanctum')->user();
+
+    $user = User::where('_token', $_user->_token)->first();
+    $user->roles;
+    $user->galleryaccessmaps;
+
+    $rolesWithPermissions = [];
+    foreach ($user->roles as $role) {
+      $_role = Role::where('id', $role->id)->first();
+      array_push($rolesWithPermissions, [
+        'role' => $role->name,
+        'permissions' => $_role->permissions
+      ]);
+    }
+
+    $user->rolesWithPermissions = $rolesWithPermissions;
 
     return response()->json($user, 200);
   }
