@@ -242,6 +242,7 @@ class AlbumController extends BaseController
     public function changeStatus ($token, Request $request) {
       $album = Album::where('_token', $token)->first();
       $album->is_public = $request->is_public;
+      $album->update();
 
       $status = $request->is_public ? 'PUBLIC' : 'PRIVATE';
 
