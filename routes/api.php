@@ -134,6 +134,7 @@ Route::controller(AlbumController::class)->group(function () {
     Route::get('/paginated-photos/{token}', 'pphotos');
     Route::post('/store/{token}', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add album']);
     Route::post('/update/{token}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit album']);
+    Route::post('/change-status/{token}', 'changeStatus')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit album']);
     Route::delete('/delete/{token}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete album']);
     Route::post('/add-photo/{token}', 'addPhoto')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo|add album|edit album']);
     Route::post('/upload-photos/{token}', 'uploadPhotos')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo|add album|edit album']);

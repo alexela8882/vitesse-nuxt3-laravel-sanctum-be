@@ -182,7 +182,9 @@ class GalleryController extends BaseController
       $gallery = Gallery::where('_token', $token)
               ->select('id', 'parent_id', '_token', 'name')
               ->with('tags')
-              ->with('subgalleries')
+              ->with(['subgalleries' => function ($qry) {
+                $qry->with('tags');
+              }])
               ->with('parent')
               ->first();
 

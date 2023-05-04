@@ -239,6 +239,21 @@ class AlbumController extends BaseController
       return response()->json($response, 200);
     }
 
+    public function changeStatus ($token, Request $request) {
+      $album = Album::where('_token', $token)->first();
+      $album->is_public = $request->is_public;
+      $album->update();
+
+      $status = $request->is_public ? 'PUBLIC' : 'PRIVATE';
+
+      $response = [
+        'data' => $album,
+        'message' => $album->title . ' set to "' . $status . '"'
+      ];
+
+      return response()->json($response, 200);
+    }
+
     public function update ($token, Request $request) {
       $req_photo = json_decode($request->photo);
       $req_country = json_decode($request->country);
