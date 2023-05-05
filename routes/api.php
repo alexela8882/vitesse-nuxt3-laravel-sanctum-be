@@ -130,7 +130,9 @@ Route::controller(GalleryController::class)->group(function () {
 
 Route::controller(AlbumController::class)->group(function () {
   Route::group(['prefix' => '/albums'], function () {
-    Route::get('/get/{token}', 'get');
+    Route::get('/public', 'public');
+    Route::get('/public/{token}', 'publicGet');
+    Route::get('/get/{token}', 'get')->middleware(['auth:sanctum'])->middleware(['nd_permission:view album']);
     Route::get('/paginated-photos/{token}', 'pphotos');
     Route::post('/store/{token}', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add album']);
     Route::post('/update/{token}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit album']);
