@@ -78,6 +78,33 @@ class AlbumController extends BaseController
       return response()->json($album, 200);
     }
 
+    public function public () {
+      $albums = Album::where('is_public', true)
+                ->with('country')
+                ->with('photos')
+                ->with(['gallerymaps' => function ($qry) {
+                  $qry->with('gallery');
+                }])
+                ->with('tags')
+                ->get();
+
+      return response()->json($albums, 200);
+    }
+
+    public function publicGet ($token) {
+      $album = Album::where('is_public', true)
+                ->where('_token', $token)
+                ->with('country')
+                ->with('photos')
+                ->with(['gallerymaps' => function ($qry) {
+                  $qry->with('gallery');
+                }])
+                ->with('tags')
+                ->first();
+
+      return response()->json($album, 200);
+    }
+
     public function store ($token, Request $request) {
       // $req_photos = json_decode($request->photos);
       // $req_images = json_decode($request->images_array);
