@@ -183,7 +183,23 @@ class GalleryController extends BaseController
               ->select('id', 'parent_id', '_token', 'name')
               ->with('tags')
               ->with(['subgalleries' => function ($qry) {
-                $qry->with('tags');
+                $qry->with('tags')
+                    ->with(['albummaps' => function ($qry) {
+                      $qry->orderBy('album_id', 'desc')
+                          ->with(['album' => function ($qry) {
+                            $qry->with('country')
+                                ->with('tags')
+                                ->with('photos');
+                          }]);
+                    }]);
+              }])
+              ->with(['albummaps' => function ($qry) {
+                $qry->orderBy('album_id', 'desc')
+                    ->with(['album' => function ($qry) {
+                      $qry->with('country')
+                          ->with('tags')
+                          ->with('photos');
+                    }]);
               }])
               ->with('parent')
               ->first();
