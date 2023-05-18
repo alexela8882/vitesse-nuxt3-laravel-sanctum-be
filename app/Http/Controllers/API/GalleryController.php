@@ -643,7 +643,16 @@ class GalleryController extends BaseController
       // append method, albums & photos count
       $custom = collect(['method' => 'POST', 'album_count' => $albums->count(), 'photo_count' => $photos->count()]);
 
-      $data = $albums->toBase()->merge($photos);
+      // finalized albums & photos query based on category filter
+      if ($request->filter['category'] === 'all' || $request->filter['category'] === 'albums') $albums = $albums;
+      else $albums = [];
+
+      if ($request->filter['category'] === 'all' || $request->filter['category'] === 'photos') $photos = $photos;
+      else $photos = [];
+
+      if ($request->filter['category'] === 'all' || $request->filter['category'] === 'albums') {
+        $data = $albums->toBase()->merge($photos);
+      } else $data = $photos;
 
       if ($request->filter['sort'] == 'asc') $collection = (new Collection($data))->sortByDate('created_at', true)->paginate(5);
       else $collection = (new Collection($data))->sortByDate('created_at', false)->paginate(5);
