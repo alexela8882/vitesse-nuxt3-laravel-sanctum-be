@@ -117,7 +117,6 @@ class AlbumController extends BaseController
       $rules = [
         'title' => 'required|unique:albums,title',
         'country' => 'required',
-        'venue' => 'required',
         'date_range' => 'required',
         // 'description' => 'required',
         // 'img_path' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:50000',
@@ -127,7 +126,6 @@ class AlbumController extends BaseController
         'title.required' => 'This field is required.',
         'title.unique' => 'Ttitle already taken. Please choose another title.',
         'country.required' => 'This field is required.',
-        'venue.required' => 'This field is required.',
         'date_range.required' => 'This field is required.',
         // 'description.required' => 'This field is required.',
         // 'img_path.required' => 'Please upload image.',
@@ -147,7 +145,7 @@ class AlbumController extends BaseController
       $album->title = $request->title;
       $album->description = ($request->description && $request->description !== "null") ? $request->description : null;
       $album->country_id = $req_country->id;
-      $album->venue = $request->venue;
+      $album->venue = ($request->venue && $request->venue !== "null") ? $request->venue : null;
       $album->event_date = Carbon::parse($req_date_range[0])->addDay()->format('Y-m-d h:i:s');
       $album->date_from = Carbon::parse($req_date_range[0])->addDay()->format('Y-m-d h:i:s');
       $album->date_to = Carbon::parse($req_date_range[1] ? $req_date_range[1] : $req_date_range[0])->addDay()->format('Y-m-d h:i:s');
@@ -292,7 +290,6 @@ class AlbumController extends BaseController
       $rules = [
         'title' => 'required|unique:albums,title,'.$request->id,
         'country' => 'required',
-        'venue' => 'required',
         'date_range' => 'required',
         'img_path' => 'required',
       ];
@@ -301,7 +298,6 @@ class AlbumController extends BaseController
         'title.required' => 'This field is required.',
         'title.unique' => 'Ttitle already taken. Please choose another title.',
         'country.required' => 'This field is required.',
-        'venue.required' => 'This field is required.',
         'date_range.required' => 'This field is required.',
         'img_path.required' => 'Please upload image.',
       ];
@@ -317,7 +313,7 @@ class AlbumController extends BaseController
       $album->title = $request->title;
       $album->description = ($request->description && $request->description !== "null") ? $request->description : null;
       $album->country_id = $req_country->id;
-      $album->venue = $request->venue;
+      $album->venue = ($request->venue && $request->venue !== "null") ? $request->venue : null;
       $album->event_date = Carbon::parse($req_date_range[0])->addDay()->format('Y-m-d h:i:s');
       $album->date_from = Carbon::parse($req_date_range[0])->addDay()->format('Y-m-d h:i:s');
       $album->date_to = Carbon::parse($req_date_range[1] ? $req_date_range[1] : $req_date_range[0])->addDay()->format('Y-m-d h:i:s');
