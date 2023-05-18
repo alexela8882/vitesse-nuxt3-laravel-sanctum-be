@@ -180,7 +180,7 @@ class GalleryController extends BaseController
 
     public function generalGet ($token) {
       $gallery = Gallery::where('_token', $token)
-              ->select('id', 'parent_id', '_token', 'name')
+              ->select('id', 'parent_id', '_token', 'name', 'color', 'second_color')
               ->with('tags')
               ->with(['subgalleries' => function ($qry) {
                 $qry->with('tags')
