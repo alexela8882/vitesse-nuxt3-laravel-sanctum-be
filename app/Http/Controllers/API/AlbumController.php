@@ -414,71 +414,80 @@ class AlbumController extends BaseController
 
       // upload images
       foreach ($request->images_array as $iindex => $req_image) {
-        // add photo to database
-        $photo = new Photo;
-        $photo->user_id = $user->id;
-        $photo->album_id = $album->id;
-        $photo->file_name = $req_photo->file_name;
-        $photo->file_size = $req_photo->file_size;
-        $photo->file_type = $req_photo->file_type;
-        $photo->description = $req_photo->country_id;
-        $photo->country_id = $req_photo->country_id;
-        $photo->event_date = $req_photo->event_date;
-        $photo->file_extension = $req_image->getClientOriginalExtension();
-        $photo->description = ($req_photo->description && $req_photo->description !== "null") ? $req_photo->description : null;
-        $photo->_token = generateRandomString();
-        $photo->save();
+        // handle file type
+        if (
+          $req_image->getClientOriginalExtension() == 'png' ||
+          $req_image->getClientOriginalExtension() == 'jpg' ||
+          $req_image->getClientOriginalExtension() == 'jpeg' ||
+          $req_image->getClientOriginalExtension() == 'gif'
+        ) {
 
-        // delete current maps first
-        GPMap::where('photo_id', $photo->id)->delete();
+          // add photo to database
+          $photo = new Photo;
+          $photo->user_id = $user->id;
+          $photo->album_id = $album->id;
+          $photo->file_name = $req_photo->file_name;
+          $photo->file_size = $req_photo->file_size;
+          $photo->file_type = $req_photo->file_type;
+          $photo->description = $req_photo->country_id;
+          $photo->country_id = $req_photo->country_id;
+          $photo->event_date = $req_photo->event_date;
+          $photo->file_extension = $req_image->getClientOriginalExtension();
+          $photo->description = ($req_photo->description && $req_photo->description !== "null") ? $req_photo->description : null;
+          $photo->_token = generateRandomString();
+          $photo->save();
 
-        // collection parent ids
-        $parentGalleryIds = [];
+          // delete current maps first
+          GPMap::where('photo_id', $photo->id)->delete();
 
-        // save sub-galleries as tag
-        if (count($req_photo->galleries) > 0) {
-          foreach ($req_photo->galleries as $gallery) {
-            $gpmap = new GPMap;
-            $gpmap->gallery_id = $gallery->id;
-            $gpmap->photo_id = $photo->id;
-            $gpmap->save();
+          // collection parent ids
+          $parentGalleryIds = [];
 
-            // also save parent gallery as tag
-            if ($gallery->parent_id) {
-              // prevent duplicate ids
-              if (!in_array($gallery->parent_id, $parentGalleryIds)) {
-                array_push($parentGalleryIds, $gallery->parent_id);
+          // save sub-galleries as tag
+          if (count($req_photo->galleries) > 0) {
+            foreach ($req_photo->galleries as $gallery) {
+              $gpmap = new GPMap;
+              $gpmap->gallery_id = $gallery->id;
+              $gpmap->photo_id = $photo->id;
+              $gpmap->save();
+
+              // also save parent gallery as tag
+              if ($gallery->parent_id) {
+                // prevent duplicate ids
+                if (!in_array($gallery->parent_id, $parentGalleryIds)) {
+                  array_push($parentGalleryIds, $gallery->parent_id);
+                }
               }
             }
           }
-        }
 
-        // store unique parent ids
-        foreach ($parentGalleryIds as $parentgalleryid) {
-          $gpmap = new GPMap;
-          $gpmap->gallery_id = $parentgalleryid;
-          $gpmap->photo_id = $photo->id;
-          $gpmap->save();
-        }
+          // store unique parent ids
+          foreach ($parentGalleryIds as $parentgalleryid) {
+            $gpmap = new GPMap;
+            $gpmap->gallery_id = $parentgalleryid;
+            $gpmap->photo_id = $photo->id;
+            $gpmap->save();
+          }
 
-        // collect all tags from photo tags and gallery tags
-        $allTags = [];
-        foreach ($req_photo->tags as $tag) array_push($allTags, $tag);
-        foreach ($req_photo->gallerytags as $gallerytag) array_push($allTags, $gallerytag);
+          // collect all tags from photo tags and gallery tags
+          $allTags = [];
+          foreach ($req_photo->tags as $tag) array_push($allTags, $tag);
+          foreach ($req_photo->gallerytags as $gallerytag) array_push($allTags, $gallerytag);
 
-        // sync tags
-        $photo->syncTags([]); // reset first
-        foreach ($allTags as $allTag) $photo->attachTag($allTag->name->en, $allTag->type);
+          // sync tags
+          $photo->syncTags([]); // reset first
+          foreach ($allTags as $allTag) $photo->attachTag($allTag->name->en, $allTag->type);
 
-        // generate file for uploading
-        $file_location = 'images/'.$album->_token;
-        $file = $photo->_token . '.' . $photo->file_extension;
+          // generate file for uploading
+          $file_location = 'images/'.$album->_token;
+          $file = $photo->_token . '.' . $photo->file_extension;
 
-        // upload image
-        $req_image->move(public_path($file_location), $file);
+          // upload image
+          $req_image->move(public_path($file_location), $file);
 
-        // generate thumbnails
-        generateThumbnail($album, $photo);
+          // generate thumbnails
+          generateThumbnail($album, $photo);
+        } else return response()->json('File type not allowed.', 422);
       }
 
       $response = [

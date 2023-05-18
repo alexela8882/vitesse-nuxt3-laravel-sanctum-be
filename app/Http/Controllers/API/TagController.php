@@ -24,7 +24,9 @@ class TagController extends BaseController
     }
 
     public function withoutType () {
-      $tags = Tag::where('type', null)->get();
+      $tags = Tag::where('type', null)
+              ->orderByRaw('CAST(JSON_EXTRACT(name, "$.en") AS unsigned)', 'asc')
+              ->get();
 
       return response()->json($tags, 200);
     }

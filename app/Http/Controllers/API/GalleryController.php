@@ -183,7 +183,23 @@ class GalleryController extends BaseController
               ->select('id', 'parent_id', '_token', 'name')
               ->with('tags')
               ->with(['subgalleries' => function ($qry) {
-                $qry->with('tags');
+                $qry->with('tags')
+                    ->with(['albummaps' => function ($qry) {
+                      $qry->orderBy('album_id', 'desc')
+                          ->with(['album' => function ($qry) {
+                            $qry->with('country')
+                                ->with('tags')
+                                ->with('photos');
+                          }]);
+                    }]);
+              }])
+              ->with(['albummaps' => function ($qry) {
+                $qry->orderBy('album_id', 'desc')
+                    ->with(['album' => function ($qry) {
+                      $qry->with('country')
+                          ->with('tags')
+                          ->with('photos');
+                    }]);
               }])
               ->with('parent')
               ->first();
@@ -331,6 +347,9 @@ class GalleryController extends BaseController
 
       // fetch data
       $gallery = Gallery::where('_token', $token)->first();
+
+      // delete gallery from maps
+      GUAMap::where('id', $gallery->id)->delete();
   
       $savedGallery = $gallery;
   
@@ -624,7 +643,16 @@ class GalleryController extends BaseController
       // append method, albums & photos count
       $custom = collect(['method' => 'POST', 'album_count' => $albums->count(), 'photo_count' => $photos->count()]);
 
-      $data = $albums->toBase()->merge($photos);
+      // finalized albums & photos query based on category filter
+      if ($request->filter['category'] === 'all' || $request->filter['category'] === 'albums') $albums = $albums;
+      else $albums = [];
+
+      if ($request->filter['category'] === 'all' || $request->filter['category'] === 'photos') $photos = $photos;
+      else $photos = [];
+
+      if ($request->filter['category'] === 'all' || $request->filter['category'] === 'albums') {
+        $data = $albums->toBase()->merge($photos);
+      } else $data = $photos;
 
       if ($request->filter['sort'] == 'asc') $collection = (new Collection($data))->sortByDate('created_at', true)->paginate(5);
       else $collection = (new Collection($data))->sortByDate('created_at', false)->paginate(5);
