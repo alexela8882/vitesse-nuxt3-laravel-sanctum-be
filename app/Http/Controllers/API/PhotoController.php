@@ -140,6 +140,6 @@ class PhotoController extends BaseController
       $photo = Photo::where('_token', $token)->with('album')->first();
 
       $file = $photo->album->_token.'/'.$photo->_token.'.'.$photo->file_extension;
-      return Storage::disk('images')->download($file);
+      return Storage::disk('images')->download($file, $photo->file_name);
     }
 }
