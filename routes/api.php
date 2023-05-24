@@ -139,7 +139,7 @@ Route::controller(AlbumController::class)->group(function () {
     Route::post('/change-status/{token}', 'changeStatus')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit album']);
     Route::delete('/delete/{token}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete album']);
     Route::post('/add-photo/{token}', 'addPhoto')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo|add album|edit album']);
-    Route::post('/upload-photos/{token}', 'uploadPhotos')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo|add album|edit album']);
+    Route::post('/upload-photos/{galleryToken}/{albumToken}', 'uploadPhotos')->middleware(['auth:sanctum'])->middleware(['nd_permission:add photo|add album|edit album']);
     Route::post('/empty/{token}', 'empty')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete photo']);
     Route::get('/download-album/{token}', 'downloadAlbum');
   });
