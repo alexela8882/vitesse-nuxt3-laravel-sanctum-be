@@ -343,7 +343,7 @@ class AlbumController extends BaseController
       $gallery = Gallery::where('_token', $galleryToken)->first();
 
       // upload images
-      foreach ($request->images_array as $iindex => $req_image) {
+      foreach ($request->file('images_array') as $iindex => $req_image) {
         // handle file type
         if (
           $req_image->getClientOriginalExtension() == 'png' ||

@@ -32,6 +32,10 @@ use App\Models\User;
 |
 */
 
+Route::get('/phpinfo', function () {
+  return phpinfo();
+});
+
 Route::get('/getsubdomain', function () {
   return getRefererSubdomain();
 });
@@ -162,6 +166,7 @@ Route::controller(TagController::class)->group(function () {
     Route::put('/store', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add tag']);
     Route::post('/update/{id}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit tag']);
     Route::delete('/delete/{id}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete tag']);
+    Route::post('/multiple-delete', 'multiDelete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete tag']);
   });
 });
 

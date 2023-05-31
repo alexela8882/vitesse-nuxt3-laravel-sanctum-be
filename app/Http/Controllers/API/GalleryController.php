@@ -494,7 +494,7 @@ class GalleryController extends BaseController
       // $dateTo = $request->filter['date_range']['to'] ? $request->filter['date_range']['to'] : $request->filter['date_range']['from'];
       $dateFrom = null;
       $dateTo = null;
-      if (count($request->filter['date_range2']) > 0) {
+      if ($request->filter['date_range2'] && count($request->filter['date_range2']) > 0) {
         $dateFrom = $request->filter['date_range2'][0];
         $dateTo = $request->filter['date_range2'][1] ? $request->filter['date_range2'][1] : $request->filter['date_range2'][0];
       }
