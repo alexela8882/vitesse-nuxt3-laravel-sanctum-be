@@ -66,7 +66,7 @@ class TagController extends BaseController
   
       if($validator->fails()) return response()->json($validator->errors(), 422);
 
-      // update tag
+    // update tag
       $tag->name = $request->name;
       $tag->type = $request->type;
       $tag->color = !$request->type || ($request->color == '#000000' || $request->color == '#ffffff') ? null : $request->color;
@@ -98,5 +98,23 @@ class TagController extends BaseController
       ];
   
       return response()->json($response);
+    }
+
+    public function multiDelete (Request $request) {
+      $tags = $request->all();
+      $ids = [];
+
+      foreach ($tags as $tag) {
+        array_push($ids, $tag['id']);
+      }
+
+      Tag::whereIn('id', $ids)->delete();
+
+      $response = [
+        'data' => $tags,
+        'message' => 'Selected Tags are successfully deleted.'
+      ];
+
+      return response()->json($response, 200);
     }
 }
