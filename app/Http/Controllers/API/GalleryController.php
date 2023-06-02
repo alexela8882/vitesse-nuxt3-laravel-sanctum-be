@@ -349,7 +349,7 @@ class GalleryController extends BaseController
       $gallery = Gallery::where('_token', $token)->first();
 
       // delete gallery from maps
-      GUAMap::where('id', $gallery->id)->delete();
+      GUAMap::where('gallery_id', $gallery->id)->delete();
   
       $savedGallery = $gallery;
   
