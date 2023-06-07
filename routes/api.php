@@ -189,6 +189,6 @@ Route::controller(SubdomainController::class)->group(function () {
 
 Route::controller(SearchController::class)->group(function () {
   Route::group(['prefix' => '/search'], function () {
-    Route::get('/get/{id}', 'all');
+    Route::post('/get', 'get');
   });
 });
