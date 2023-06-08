@@ -24,6 +24,10 @@ class Gallery extends Model
       return $this->hasMany(GalleryAlbumMap::class);
     }
 
+    public function photomaps () {
+      return $this->hasMany(GalleryPhotoMap::class);
+    }
+
     public function subdomain () {
       return $this->belongsTo(Subdomain::class);
     }
