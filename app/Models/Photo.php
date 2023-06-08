@@ -4,13 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 use Spatie\Tags\HasTags;
 
 use Carbon\Carbon;
 
 class Photo extends Model
 {
-    use HasFactory, HasTags;
+    use HasFactory, HasTags, Searchable;
+
+    public function searchableAs () {
+      return 'photos_index';
+    }
+
+    public function toSearchableArray () {
+      $array = $this->toArray();
+      return $array;
+    }
 
     public function getEventDateAttribute($value) {
       if ($value) {

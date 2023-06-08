@@ -18,6 +18,7 @@ use App\Http\Controllers\API\PhotoController;
 use App\Http\Controllers\API\TagController;
 use App\Http\Controllers\API\RegionController;
 use App\Http\Controllers\API\SubdomainController;
+use App\Http\Controllers\API\SearchController;
 
 use App\Models\User;
 
@@ -183,5 +184,11 @@ Route::controller(SubdomainController::class)->group(function () {
     Route::put('/store', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add subdomain']);
     Route::post('/update/{token}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit subdomain']);
     Route::delete('/delete/{token}', 'delete')->middleware(['auth:sanctum'])->middleware(['nd_permission:delete subdomain']);
+  });
+});
+
+Route::controller(SearchController::class)->group(function () {
+  Route::group(['prefix' => '/search'], function () {
+    Route::post('/get', 'get');
   });
 });

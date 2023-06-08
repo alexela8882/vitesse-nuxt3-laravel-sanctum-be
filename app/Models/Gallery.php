@@ -4,14 +4,28 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Laravel\Scout\Searchable;
 use Spatie\Tags\HasTags;
 
 class Gallery extends Model
 {
-    use HasFactory, HasTags;
+    use HasFactory, HasTags, Searchable;
+
+    public function searchableAs () {
+      return 'galleries_index';
+    }
+
+    public function toSearchableArray () {
+      $array = $this->toArray();
+      return $array;
+    }
 
     public function albummaps () {
       return $this->hasMany(GalleryAlbumMap::class);
+    }
+
+    public function photomaps () {
+      return $this->hasMany(GalleryPhotoMap::class);
     }
 
     public function subdomain () {
