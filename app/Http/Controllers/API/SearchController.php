@@ -8,6 +8,7 @@ use App\Http\Controllers\API\BaseController as BaseController;
 use App\Models\Gallery;
 use App\Models\Album;
 use App\Models\Photo;
+use App\Models\Country;
 
 class SearchController extends BaseController
 {
@@ -79,6 +80,50 @@ class SearchController extends BaseController
                       }])
                       ->get();
 
+      // search by country
+      $country = Country::where('name', 'like', '%' . $key . '%')->first();
+      if ($country) {
+        $albumsByCountry = Album::where('country_id', $country->id)
+                          ->with('photos')
+                          ->with('country')
+                          ->with('tags')
+                          ->with(['gallerymaps' => function ($qry) {
+                              $qry->with('gallery');
+                          }])
+                          ->get();
+
+        $photosByCountry = Photo::where('country_id', $country->id)
+                          ->with('album')
+                          ->with('country')
+                          ->with('tags')
+                          ->with(['gallerymaps' => function ($qry) {
+                              $qry->with('gallery');
+                          }])
+                          ->get();
+
+        foreach ($albumsByCountry as $albumByCountry) {
+          array_push($albums, $albumByCountry);
+        }
+
+        foreach ($photosByCountry as $photoByCountry) {
+          array_push($photos, $photoByCountry);
+        }
+      }
+
+      $status = null;
+      if (strtolower($key) === 'public') $status = 1;
+      else if (strtolower($key) === 'private') $status = 0;
+
+      // search by album status
+      $albumsByStatus = Album::where('is_public', $status)
+                      ->with('photos')
+                      ->with('country')
+                      ->with('tags')
+                      ->with(['gallerymaps' => function ($qry) {
+                          $qry->with('gallery');
+                      }])
+                      ->get();
+
       // retrieve
       foreach ($galleries as $gallery) {
         foreach ($gallery->albummaps as $amap) { // get albums
@@ -104,6 +149,10 @@ class SearchController extends BaseController
 
       foreach ($photosByName as $photoByName) {
         array_push($photos, $photoByName);
+      }
+
+      foreach ($albumsByStatus as $albumByStatus) {
+        array_push($albums, $albumByStatus);
       }
 
       $response = [
