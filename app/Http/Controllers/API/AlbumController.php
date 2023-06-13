@@ -73,6 +73,19 @@ class AlbumController extends BaseController
       return $album;
     }
 
+    public function mostRecent () {
+      $albums = Album::with('country')
+                ->with('photos')
+                ->with(['gallerymaps' => function ($qry) {
+                  $qry->with('gallery');
+                }])
+                ->with('tags')
+                ->limit(3)
+                ->get();
+
+      return response()->json($albums, 200);
+    }
+
     public function get ($token) {
       $album = $this->_get($token);
       return response()->json($album, 200);
