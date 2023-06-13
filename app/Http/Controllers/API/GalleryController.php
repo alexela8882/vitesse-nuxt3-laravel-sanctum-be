@@ -77,7 +77,31 @@ class GalleryController extends BaseController
       // return response()->json($galleries, 200);
       // $galleries = Gallery::with('tags')->get();
 
-      return response()->json($galleries, 200);
+      $albumIds = [];
+
+      foreach ($galleries as $gallery) {
+        foreach ($gallery->albummaps as $index => $galbum) {
+          array_push($albumIds, $galbum->album_id);
+        }
+      }
+
+      $recentAlbums = Album::whereIn('id', array_unique($albumIds))
+                      ->with(['gallerymaps' => function ($qry) {
+                        $qry->with('gallery');
+                      }])
+                      ->with('photos')
+                      ->with('country')
+                      ->with('tags')
+                      ->orderBy('created_at', 'desc')
+                      ->limit(5)
+                      ->get();
+
+      $response = [
+        'galleries' => $galleries,
+        'recent_albums' => $recentAlbums
+      ];
+
+      return response()->json($response, 200);
     }
 
     public function uall () {
@@ -218,6 +242,38 @@ class GalleryController extends BaseController
       $gallery = $this->generalGet($token);
   
       return response()->json($gallery);
+    }
+
+    public function getWithRecent ($token) {
+      // check user access first
+      $check = checkUserGalleryAccess($token);
+      if ($check == 0) return response()->json('unauthorized', 403);
+
+      $gallery = $this->generalGet($token);
+
+      $albumIds = [];
+
+      foreach ($gallery->albummaps as $index => $galbum) {
+        array_push($albumIds, $galbum->album_id);
+      }
+
+      $recentAlbums = Album::whereIn('id', array_unique($albumIds))
+                      ->with(['gallerymaps' => function ($qry) {
+                        $qry->with('gallery');
+                      }])
+                      ->with('photos')
+                      ->with('country')
+                      ->with('tags')
+                      ->orderBy('created_at', 'desc')
+                      ->limit(5)
+                      ->get();
+
+      $response = [
+        'data' => $gallery,
+        'recent_albums' => $recentAlbums,
+      ];
+  
+      return response()->json($response);
     }
 
     public function deepGet ($token) {

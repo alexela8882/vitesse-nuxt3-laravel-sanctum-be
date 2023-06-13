@@ -125,6 +125,7 @@ Route::controller(GalleryController::class)->group(function () {
     Route::get('/lists-parent/{token}', 'allParents');
     Route::get('/parents', 'parents');
     Route::get('/get/{token}', 'get');
+    Route::get('/get-with-recent/{token}', 'getWithRecent');
     Route::get('/deep-get/{token}', 'deepGet');
     Route::put('/store', 'store')->middleware(['auth:sanctum'])->middleware(['nd_permission:add gallery']);
     Route::post('/update/{token}', 'update')->middleware(['auth:sanctum'])->middleware(['nd_permission:edit gallery']);
@@ -136,6 +137,7 @@ Route::controller(GalleryController::class)->group(function () {
 Route::controller(AlbumController::class)->group(function () {
   Route::group(['prefix' => '/albums'], function () {
     Route::get('/public', 'public');
+    Route::get('/most-recent', 'mostRecent');
     Route::get('/public/{token}', 'publicGet');
     Route::get('/get/{token}', 'get')->middleware(['auth:sanctum'])->middleware(['nd_permission:view album']);
     Route::get('/paginated-photos/{token}', 'pphotos');
