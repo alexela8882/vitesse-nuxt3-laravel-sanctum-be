@@ -85,9 +85,20 @@ class GalleryController extends BaseController
         }
       }
 
+      // get user gallery map ids
+      $userGalleryIds = [];
+      $userGalleries = getUserGalleries();
+
+      foreach ($userGalleries as $userGallery) {
+        array_push($userGalleryIds, $userGallery->id);
+      }
+
+      // filter only user gallery maps
       $recentAlbums = Album::whereIn('id', array_unique($albumIds))
-                      ->with(['gallerymaps' => function ($qry) {
-                        $qry->with('gallery');
+                      ->with(['gallerymaps' => function ($qry) use ($userGalleryIds) {
+                        $qry->where(function($qry) use ($userGalleryIds) {
+                              $qry->whereIn('gallery_id', $userGalleryIds);
+                            })->with('gallery');
                       }])
                       ->with('photos')
                       ->with('country')
@@ -257,9 +268,23 @@ class GalleryController extends BaseController
         array_push($albumIds, $galbum->album_id);
       }
 
+      // get user gallery maps
+      $user = auth('sanctum')->user();
+
+
+      // get user gallery map ids
+      $userGalleryIds = [];
+      $userGalleries = getUserGalleries();
+
+      foreach ($userGalleries as $userGallery) {
+        array_push($userGalleryIds, $userGallery->id);
+      }
+
       $recentAlbums = Album::whereIn('id', array_unique($albumIds))
-                      ->with(['gallerymaps' => function ($qry) {
-                        $qry->with('gallery');
+                      ->with(['gallerymaps' => function ($qry) use ($userGalleryIds) {
+                        $qry->where(function($qry) use ($userGalleryIds) {
+                              $qry->whereIn('gallery_id', $userGalleryIds);
+                            })->with('gallery');
                       }])
                       ->with('photos')
                       ->with('country')

@@ -17,6 +17,24 @@ use Validator;
 class UserController extends BaseController
 {
 
+  public function uall () {
+    $users = User::where('id', '!=', 1)
+              ->with('roles')
+              ->with('info')
+              ->get();
+
+    $permissions = auth('sanctum')->user()->getAllPermissions();
+
+    $arrPerms = [];
+    foreach ($permissions as $permission) {
+      array_push($arrPerms, $permission->name);
+    }
+
+    // return $arrPerms;
+
+    return response()->json($users, 200);
+  }
+
   public function all () {
     $users = User::where('id', '!=', 1)
               ->with('roles')
@@ -41,7 +59,8 @@ class UserController extends BaseController
             ->with('info')
             ->first();
 
-    // set roles
+    // set info & roles
+    $user->info;
     $user->roles;
 
     // get galleries through access maps
@@ -64,6 +83,7 @@ class UserController extends BaseController
     $_user = auth('sanctum')->user();
 
     $user = User::where('_token', $_user->_token)->first();
+    $user->info;
     $user->roles;
     $user->galleryaccessmaps;
 
@@ -86,6 +106,21 @@ class UserController extends BaseController
     $user->getAllPermissions();
 
     return response()->json($user, 200);
+  }
+
+  public function changeDp ($token, Request $request) {
+    $user = User::where('_token', $token)->first();
+
+    $info = UserInfo::where('user_id', $user->id)->first();
+    $info->avatar = "" . $request->avatar;
+    $info->update();
+
+    $response = [
+      'data' => $info,
+      'message' => 'Avatar successfully changed.'
+    ];
+
+    return response()->json($response, 200);
   }
 
   public function changePassword ($token, Request $request) {

@@ -52,12 +52,14 @@ Route::controller(UserController::class)->group(function () {
     Route::get('/', 'authUser');
     Route::get('/get/{token}', 'userProfile');
     Route::put('/change-password/{token}', 'changePassword');
+    Route::put('/change-dp/{token}', 'changeDp');
   });
 });
 
 Route::controller(UserController::class)->group(function () {
   Route::group(['prefix' => '/users', 'middleware' => ['auth:sanctum']], function () {
     Route::get('/', 'all')->middleware(['nd_permission:view user|add user|edit user|delete user']);
+    Route::get('/unpaginated', 'uall')->middleware(['nd_permission:view user|add user|edit user|delete user']);
     Route::get('/get/{token}', 'get')->middleware(['nd_permission:view user']);
     Route::put('/store', 'store')->middleware(['nd_permission:add user']);
     Route::post('/update/{token}', 'update')->middleware(['nd_permission:edit user']);
