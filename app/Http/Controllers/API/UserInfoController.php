@@ -44,6 +44,7 @@ class UserInfoController extends BaseController
       $userinfo->country_id = $request->country_id;
       $userinfo->company_id = $request->company_id;
       $userinfo->position_id = $request->position_id;
+      $userinfo->avatar = $request->avatar ? $request->avatar : 'USER AVATAR_ESCO PHOTOS-70px-16.png';
       $userinfo->save();
 
       // update users table
