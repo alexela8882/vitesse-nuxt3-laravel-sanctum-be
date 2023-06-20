@@ -14,7 +14,7 @@ class AddAvatarColumnInUserInfosTable extends Migration
     public function up()
     {
         Schema::table('user_infos', function (Blueprint $table) {
-          $table->longtext('avatar')->default('default.jpg');
+          $table->longtext('avatar')->default('USER AVATAR_ESCO PHOTOS-70px-16.png');
         });
     }
 

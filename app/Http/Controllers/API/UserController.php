@@ -59,8 +59,7 @@ class UserController extends BaseController
             ->with('info')
             ->first();
 
-    // set info & roles
-    $user->info;
+    // set roles
     $user->roles;
 
     // get galleries through access maps
@@ -73,8 +72,6 @@ class UserController extends BaseController
 
     // set galleries
     $user->galleries = $galleries;
-
-
 
     return response()->json($user);
   }
@@ -102,7 +99,9 @@ class UserController extends BaseController
   }
 
   public function userProfile ($token) {
-    $user = User::where('_token', $token)->first();
+    $user = User::where('_token', $token)
+            ->with('info')
+            ->first();
     $user->getAllPermissions();
 
     return response()->json($user, 200);
@@ -112,7 +111,7 @@ class UserController extends BaseController
     $user = User::where('_token', $token)->first();
 
     $info = UserInfo::where('user_id', $user->id)->first();
-    $info->avatar = "" . $request->avatar;
+    $info->avatar = $request->avatar;
     $info->update();
 
     $response = [
