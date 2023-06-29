@@ -374,7 +374,7 @@ class AlbumController extends BaseController
           $photo->file_type = $req_photo->file_type;
           $photo->description = $req_photo->country_id;
           $photo->country_id = $req_photo->country_id;
-          $photo->event_date = Carbon::parse($req_photo->event_date)->addDay()->format('Y-m-d h:i:s');
+          $photo->event_date = $req_photo->event_date ? Carbon::parse($req_photo->event_date)->addDay()->format('Y-m-d h:i:s') : null;
           $photo->file_extension = $req_image->getClientOriginalExtension();
           $photo->description = ($req_photo->description && $req_photo->description !== "null") ? $req_photo->description : null;
           $photo->_token = generateRandomString();
@@ -384,10 +384,10 @@ class AlbumController extends BaseController
           GPMap::where('photo_id', $photo->id)->delete();
 
           // save main gallery as tag
-          $gpmap = new GPMap;
-          $gpmap->gallery_id = $gallery->id;
-          $gpmap->photo_id = $photo->id;
-          $gpmap->save();
+          // $gpmap = new GPMap;
+          // $gpmap->gallery_id = $gallery->id;
+          // $gpmap->photo_id = $photo->id;
+          // $gpmap->save();
 
           // collection parent ids
           $parentGalleryIds = [];
