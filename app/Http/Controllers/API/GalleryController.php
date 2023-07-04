@@ -30,7 +30,7 @@ class GalleryController extends BaseController
 
       $galleries = Gallery::with('tags')
                    ->where(function ($qry) use ($refSubdomain, $subdomain) {
-                      if ($refSubdomain !== 'frontend') $qry->where('subdomain_id', $subdomain->id);
+                      if ($refSubdomain !== 'escophotos') $qry->where('subdomain_id', $subdomain->id);
                    })
                    ->with(['albummaps' => function ($qry) {
                     $qry->with(['album' => function ($qry) {
@@ -61,7 +61,7 @@ class GalleryController extends BaseController
 
       $galleries = Gallery::whereIn('id', $gallery_ids)
                   ->where(function ($qry) use ($refSubdomain, $subdomain) {
-                      if ($refSubdomain !== 'frontend') $qry->where('subdomain_id', $subdomain->id);
+                      if ($refSubdomain !== 'escophotos') $qry->where('subdomain_id', $subdomain->id);
                   })
                   ->with(['albummaps' => function ($qry) {
                     $qry->orderBy('album_id', 'desc')
