@@ -240,7 +240,7 @@ class GalleryController extends BaseController
               ->first();
 
       $subgalleries = Gallery::where('parent_id', $gallery['id'])->with('tags')->get();
-      $gallery->subgalleries = $subgalleries;
+      $gallery['subgalleries'] = $subgalleries;
 
       return $gallery;
     }
