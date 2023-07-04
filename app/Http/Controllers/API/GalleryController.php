@@ -239,8 +239,8 @@ class GalleryController extends BaseController
               ->with('parent')
               ->first();
 
-      $subgalleries = Gallery::where('parent_id', $gallery['id'])->with('tags')->get();
-      $gallery['subgalleries'] = $subgalleries;
+      $subgalleries = Gallery::where('parent_id', $gallery->id)->with('tags')->get();
+      $gallery->subgalleries = $subgalleries;
 
       return $gallery;
     }
