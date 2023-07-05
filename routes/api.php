@@ -109,7 +109,8 @@ Route::controller(PositionController::class)->group(function () {
 
 Route::controller(UserInfoController::class)->group(function () {
   Route::group(['prefix' => '/user-infos', 'middleware' => ['auth:sanctum']], function () {
-    Route::post('/update/{token}', 'update');
+    Route::post('/update-public/{token}', 'update');
+    Route::post('/update/{token}', 'update')->middleware(['nd_permission:edit user']);
   });
 });
 
