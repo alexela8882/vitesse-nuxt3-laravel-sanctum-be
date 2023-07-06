@@ -281,10 +281,19 @@ class GalleryController extends BaseController
       }
 
       $recentAlbums = Album::whereIn('id', array_unique($albumIds))
-                      ->with(['gallerymaps' => function ($qry) use ($userGalleryIds) {
-                        $qry->where(function($qry) use ($userGalleryIds) {
+                      ->with(['gallerymaps' => function ($qry) use ($userGalleryIds, $gallery) {
+                        $qry->where(function($qry) use ($userGalleryIds, $gallery) {
                               $qry->whereIn('gallery_id', $userGalleryIds);
-                            })->with('gallery');
+                            })->with(['gallery' => function ($qry) use ($gallery) {
+                              $qry->where(function ($qry) use ($gallery) {
+                                if (count($gallery->subgalleries) > 0) {
+                                  $qry->select('gallery_id', 'album_id', 'gallery');
+                                } else {
+                                  $getSubdomain = Subdomain::where('name', getRefererSubdomain())->first();
+                                  $qry->where('subdomain_id', $getSubdomain->id);
+                                }
+                              });
+                            }]);
                       }])
                       ->with('photos')
                       ->with('country')
@@ -293,9 +302,41 @@ class GalleryController extends BaseController
                       ->limit(5)
                       ->get();
 
+      $reconstructRecentAlbums = [];
+      foreach ($recentAlbums as $index => $recentAlbum) {
+        array_push($reconstructRecentAlbums, [
+          'id' => $recentAlbum->id,
+          'title' => $recentAlbum->title,
+          'user_id' => $recentAlbum->user_id,
+          'country_id' => $recentAlbum->country_id,
+          'venue' => $recentAlbum->venue,
+          'description' => $recentAlbum->description,
+          'event_date' => $recentAlbum->event_date,
+          'img_path' => $recentAlbum->img_path,
+          '_token' => $recentAlbum->_token,
+          'created_at' => $recentAlbum->created_at,
+          'updated_at' => $recentAlbum->updated_at,
+          'date_from' => $recentAlbum->date_from,
+          'date_to' => $recentAlbum->date_to,
+          'is_public' => $recentAlbum->is_public,
+          'gallerymaps' => [],
+          'country' => $recentAlbum->country,
+          'photos' => $recentAlbum->photos,
+          'tags' => $recentAlbum->tags
+        ]);
+
+        foreach ($recentAlbum->gallerymaps as $gallerymap) {
+          if ($gallerymap->gallery !== null) array_push($reconstructRecentAlbums[$index]['gallerymaps'], [
+            'gallery_id' => $gallerymap->gallery_id,
+            'album_id' => $gallerymap->album_id,
+            'gallery' => $gallerymap->gallery
+          ]);
+        }
+      }
+
       $response = [
         'data' => $gallery,
-        'recent_albums' => $recentAlbums,
+        'recent_albums' => count($gallery->subgalleries) > 0 ? $recentAlbums : $reconstructRecentAlbums,
       ];
   
       return response()->json($response);

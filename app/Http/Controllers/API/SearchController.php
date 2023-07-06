@@ -53,7 +53,11 @@ class SearchController extends BaseController
                       ->get();
 
       $photosByTag = Photo::withAnyTagsOfAnyType([$key])
-                      ->with('album')
+                      ->with(['album' => function ($qry) {
+                        $qry->with(['gallerymaps' => function ($qry) {
+                          $qry->with('gallery');
+                        }]);
+                      }])
                       ->with('country')
                       ->with('tags')
                       ->with(['gallerymaps' => function ($qry) {
@@ -72,7 +76,34 @@ class SearchController extends BaseController
                       ->get();
 
       $photosByName = Photo::where('file_name', $key)
-                      ->with('album')
+                      ->with(['album' => function ($qry) {
+                        $qry->with(['gallerymaps' => function ($qry) {
+                          $qry->with('gallery');
+                        }]);
+                      }])
+                      ->with('country')
+                      ->with('tags')
+                      ->with(['gallerymaps' => function ($qry) {
+                          $qry->with('gallery');
+                      }])
+                      ->get();
+
+      // search by description
+      $albumsByDescription = Album::where('description', 'like', '%'.$key.'%')
+                            ->with('photos')
+                            ->with('country')
+                            ->with('tags')
+                            ->with(['gallerymaps' => function ($qry) {
+                                $qry->with('gallery');
+                            }])
+                            ->get();
+
+      $photosByDescription = Photo::where('description', 'like', '%'.$key.'%')
+                      ->with(['album' => function ($qry) {
+                        $qry->with(['gallerymaps' => function ($qry) {
+                          $qry->with('gallery');
+                        }]);
+                      }])
                       ->with('country')
                       ->with('tags')
                       ->with(['gallerymaps' => function ($qry) {
@@ -93,7 +124,11 @@ class SearchController extends BaseController
                           ->get();
 
         $photosByCountry = Photo::where('country_id', $country->id)
-                          ->with('album')
+                          ->with(['album' => function ($qry) {
+                            $qry->with(['gallerymaps' => function ($qry) {
+                              $qry->with('gallery');
+                            }]);
+                          }])
                           ->with('country')
                           ->with('tags')
                           ->with(['gallerymaps' => function ($qry) {
@@ -153,6 +188,14 @@ class SearchController extends BaseController
 
       foreach ($albumsByStatus as $albumByStatus) {
         array_push($albums, $albumByStatus);
+      }
+
+      foreach ($albumsByDescription as $albumByDescription) {
+        array_push($albums, $albumByDescription);
+      }
+
+      foreach ($photosByDescription as $photoByDescription) {
+        array_push($photos, $photoByDescription);
       }
 
       $response = [
