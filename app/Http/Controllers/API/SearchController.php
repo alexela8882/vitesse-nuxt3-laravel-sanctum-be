@@ -32,7 +32,11 @@ class SearchController extends BaseController
               }])
               ->with(['photomaps' => function ($qry) {
                 $qry->with(['photo' => function ($qry) {
-                  $qry->with('album')
+                  $qry->with(['album' => function ($qry) {
+                        $qry->with(['gallerymaps' => function ($qry) {
+                          $qry->with('gallery');
+                        }]);
+                      }])
                       ->with('country')
                       ->with('tags')
                       ->with(['gallerymaps' => function ($qry) {
