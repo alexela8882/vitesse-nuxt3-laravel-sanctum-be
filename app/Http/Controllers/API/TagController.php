@@ -32,11 +32,21 @@ class TagController extends BaseController
     }
 
     public function store (Request $request) {
+      // check for duplicated tag name
+      $checkDuplicatedTag = Tag::where('name->en', $request->name)->first();
+
       // run validation
       $validator = Validator::make($request->all(), [
-        'name' => 'required|unique:tags,name',
-        'type' => 'required',
+        'name' => 'required|unique:tags,name,en'
       ]);
+
+      // additional validation for duplcated tag name
+      if ($checkDuplicatedTag) {
+        $mess = "Tag name is already in use.";
+        $validator->after(function ($validator) use ($mess) {
+          $validator->getMessageBag()->add('name', $mess);
+        });
+      }
   
       if($validator->fails()) return response()->json($validator->errors(), 422);
 
@@ -56,6 +66,9 @@ class TagController extends BaseController
     }
 
     public function update ($id, Request $request) {
+      // check for duplicated tag name
+      $checkDuplicatedTag = Tag::where('name->en', $request->name)->first();
+
       // get tag
       $tag = Tag::where('id', $id)->first();
 
@@ -63,6 +76,14 @@ class TagController extends BaseController
       $validator = Validator::make($request->all(), [
         'name' => 'required|unique:tags,name,'.$tag->id,
       ]);
+
+      // additional validation for duplcated tag name
+      if ($checkDuplicatedTag->id != $id) {
+        $mess = "Tag name is already in use.";
+        $validator->after(function ($validator) use ($mess) {
+          $validator->getMessageBag()->add('name', $mess);
+        });
+      }
   
       if($validator->fails()) return response()->json($validator->errors(), 422);
 
