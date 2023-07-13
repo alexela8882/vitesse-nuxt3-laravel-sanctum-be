@@ -157,19 +157,35 @@ class UserController extends BaseController
 
   public function store (Request $request) {
     $validator = Validator::make($request->all(), [
-      'name' => 'required|unique:users,name',
       'email' => 'required|unique:users,email',
       'password' => 'required|min:6',
+      'first_name' => 'required',
+      'last_name' => 'required',
+      'country_id' => 'required',
+      'company_id' => 'required',
+      'position_id' => 'required',
     ]);
 
     if($validator->fails()) return response()->json($validator->errors(), 422);
 
+    // add new user
     $user = new User;
-    $user->name = $request->name;
+    $user->name = $request->first_name . " " . $request->last_name;
     $user->email = $request->email;
     $user->password = bcrypt($request->password);
     $user->_token = generateRandomString();
     $user->save();
+
+    // add new user info
+    $userInfo = new UserInfo;
+    $userInfo->user_id = $user->id;
+    $userInfo->first_name = $request->first_name;
+    $userInfo->last_name = $request->last_name;
+    $userInfo->country_id = $request->country_id;
+    $userInfo->company_id = $request->company_id;
+    $userInfo->position_id = $request->position_id;
+    $userInfo->avatar = "USER AVATAR_ESCO PHOTOS-70px-16.png";
+    $userInfo->save();
 
     $user->permissions; // get permissions
 
@@ -187,7 +203,6 @@ class UserController extends BaseController
 
     // run validation
     $validator = Validator::make($request->all(), [
-      'name' => 'required|unique:users,name,'.$user->id,
       'email' => 'required|unique:users,email,'.$user->id
     ]);
     if($validator->fails()) return response()->json($validator->errors(), 422);
@@ -196,7 +211,6 @@ class UserController extends BaseController
     if ($user->id == 1) return response()->json(['message' => 'Forbidden! You cannot alter this record.'], 403);
 
     // then update
-    $user->name = $request->name;
     $user->email = $request->email;
     if ($request->password != null || $request->password != '') $user->password = bcrypt($request->password);
     $user->update();
