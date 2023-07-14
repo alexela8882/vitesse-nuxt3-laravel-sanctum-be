@@ -383,11 +383,13 @@ class AlbumController extends BaseController
           // delete current maps first
           GPMap::where('photo_id', $photo->id)->delete();
 
-          // save main gallery as tag
-          // $gpmap = new GPMap;
-          // $gpmap->gallery_id = $gallery->id;
-          // $gpmap->photo_id = $photo->id;
-          // $gpmap->save();
+          // save subgallery as tag
+          if ($gallery->parent_id && count($req_photo->gallerytags) > 0) {
+            $gpmap = new GPMap;
+            $gpmap->gallery_id = $gallery->id;
+            $gpmap->photo_id = $photo->id;
+            $gpmap->save();
+          }
 
           // collection parent ids
           $parentGalleryIds = [];
