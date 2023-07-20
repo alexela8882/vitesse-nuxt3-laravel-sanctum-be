@@ -137,7 +137,7 @@ class UserController extends BaseController
     $validator = Validator::make($request->all(), $rules, $message);
     $validator->after(function($validator) use($request) {
       if (!\Hash::check($request->get('password'), auth('sanctum')->user()->password)) {
-        $validator->errors()->add('password', 'Old password don\'t match in our records.');
+        $validator->errors()->add('password', 'The old password does not match our records.');
       }
     });
 
@@ -157,7 +157,7 @@ class UserController extends BaseController
 
   public function store (Request $request) {
     $validator = Validator::make($request->all(), [
-      'email' => 'required|unique:users,email',
+      'email' => 'required|email:rfc,dns|unique:users,email',
       'password' => 'required|min:6',
       'first_name' => 'required',
       'last_name' => 'required',
@@ -203,7 +203,7 @@ class UserController extends BaseController
 
     // run validation
     $validator = Validator::make($request->all(), [
-      'email' => 'required|unique:users,email,'.$user->id
+      'email' => 'required|email:rfc,dns|unique:users,email,'.$user->id
     ]);
     if($validator->fails()) return response()->json($validator->errors(), 422);
 
