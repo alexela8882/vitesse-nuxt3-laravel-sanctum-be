@@ -222,7 +222,7 @@ class UserController extends BaseController
 
     $response = [
       'data' => $obj,
-      'message' => 'User "' . $request->name . '" has been successfully updated.'
+      'message' => 'User "' . $user->name . '" has been successfully updated.'
     ];
 
     return response()->json($response);
