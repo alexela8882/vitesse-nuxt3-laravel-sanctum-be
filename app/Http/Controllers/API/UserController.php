@@ -218,7 +218,7 @@ class UserController extends BaseController
     // return data to FE
     $obj = User::where('id', $user->id)->with(['permissions' => function ($qry) {
       $qry->select('id', 'name', '_token');
-    }])->first();
+    }])->with('info')->first();
 
     $response = [
       'data' => $obj,
