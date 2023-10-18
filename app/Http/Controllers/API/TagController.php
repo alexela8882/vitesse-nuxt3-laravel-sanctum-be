@@ -78,7 +78,7 @@ class TagController extends BaseController
       ]);
 
       // additional validation for duplcated tag name
-      if ($checkDuplicatedTag->id != $id) {
+      if ($checkDuplicatedTag && $checkDuplicatedTag->id != $id) {
         $mess = "Tag name is already in use.";
         $validator->after(function ($validator) use ($mess) {
           $validator->getMessageBag()->add('name', $mess);
